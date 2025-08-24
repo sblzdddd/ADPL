@@ -1,36 +1,22 @@
 <template>
   <div class="flex flex-col min-h-screen">
-    <div class="absolute inset-0 z-[-1]">
+    <div class="fixed inset-0 z-[-1]">
       <FlickeringGrid 
         class="[mask-image:radial-gradient(650px_circle_at_center,white,transparent)]" 
         color="#60A5FA" 
         :flicker-chance="0.01"
       />
     </div>
-    <div class="sticky top-0 left-0 z-50 flex justify-center items-center py-4">
-      <header class="flex items-center justify-between w-full max-w-6xl">
-        <div class="flex items-center gap-2">
-          <NuxtLink to="/">
-            <img src="/icons/adpl-icon.png" alt="Logo" class="h-10 w-10" style="image-rendering: pixelated;">
-          </NuxtLink>
-        </div>
-        <div class="flex items-center gap-2">
-          <NuxtLink to="/">
-            <Button variant="ghost">
-              <Icon name="lucide:user" size="16" />
-              <span>Login</span>
-            </Button>
-          </NuxtLink>
-        </div>
-      </header>
+    <div class=" w-full max-w-6xl mx-auto px-4">
+      <AppHeader />
+      <slot />
     </div>
-    <slot />
   </div>
 </template>
 
 <script setup lang="ts">
 import FlickeringGrid from '@/components/ui/flickering-grid/FlickeringGrid.vue'
-import { Button } from '@/components/ui/button'
+import AppHeader from '@/components/AppHeader.vue'
 </script>
 
 <style lang="postcss">

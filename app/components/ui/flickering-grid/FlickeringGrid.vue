@@ -146,7 +146,7 @@ function animate(time: number) {
     gridParams.value!.squares,
     gridParams.value!.dpr,
   );
-  animationFrameId = requestAnimationFrame(animate);
+  // animationFrameId = requestAnimationFrame(animate);
 }
 
 onMounted(() => {

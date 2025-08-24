@@ -1,1 +1,1 @@
-export { default as TabPages } from './TabPages.vue' 
+export { default as Tabs } from './Tabs.vue' 

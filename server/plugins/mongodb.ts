@@ -5,10 +5,10 @@ import type { Nitro } from 'nitropack';
 const logger = BakaLogger.child({service: 'MongoDB'})
 
 export default async (_nitroApp: Nitro) => {
-  const config = useRuntimeConfig(); // Access runtime config
+  const mongodbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/adpl';
 
   try {
-    await mongoose.connect(config.mongodbUri as string);
+    await mongoose.connect(mongodbUri);
     logger.log('success', 'Connected to MongoDB', {service: 'MongoDB'});
     
     // Wait for the connection to be ready

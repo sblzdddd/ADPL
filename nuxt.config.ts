@@ -6,6 +6,22 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
 
+  app: {
+    pageTransition: {name: 'page', mode: 'out-in'},
+    layoutTransition: {name: 'layout', mode: 'out-in'},
+    head: {
+      title: 'AiD PLace',
+      link: [
+        { rel: 'icon', sizes: '64x64', href: '/icons/adpl-icon64.png' },
+        { rel: 'icon', type: 'image/svg+xml', sizes: 'any', href: '/icons/adpl-icon.svg' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/icons/adpl-icon32.png' },
+        { rel: 'icon', type: 'image/png', sizes: '64x64', href: '/icons/adpl-icon64.png' },
+        { rel: 'icon', type: 'image/png', sizes: '128x128', href: '/icons/adpl-icon128.png' },
+        { rel: 'icon', type: 'image/png', sizes: '256x256', href: '/icons/adpl-icon256.png' },
+      ]
+    }
+  },
+
   vite: {
     plugins: [
       tailwindcss(),
@@ -18,17 +34,19 @@ export default defineNuxtConfig({
     'nuxt-auth-utils',
     '@nuxtjs/color-mode',
     '@nuxt/icon',
+    '@sentry/nuxt/module',
   ],
 
   colorMode: {
     classSuffix: '',
   },
 
-  
   imports: {
     dirs: [
       'composables/**',
-      'components/ui/'
+      'components/ui/**',
+      'shared/types/**',
+      'shared/validators/**',
     ],
     presets: [
       {
@@ -36,5 +54,58 @@ export default defineNuxtConfig({
         imports: [{name: 'InternalApi', type: true}]
       }
     ]
+  },
+
+  nitro: {
+    imports: {
+      dirs: [
+        './server/models',
+        './shared/types/**',
+        './shared/validators/**',
+      ]
+    },
+    experimental: {
+      openAPI: true,
+      websocket: true,
+      tasks: true,
+    },
+    openAPI: {
+      route: "/docs/openapi.json",
+      meta: {
+        title: 'ADPL API',
+        description: 'ADPL API is the RESTful API for ADPL.',
+        version: '1.0',
+      },
+      production: "runtime",
+      ui: {
+        scalar: {
+          route: "/docs/scalar",
+          theme: 'default'
+        },
+        swagger: {
+          route: "/docs/swagger",
+        }
+      }
+    },
+  },
+
+  sourcemap: {
+    client: 'hidden',
+  },
+
+  runtimeConfig: {
+    oauth: {
+      google: {
+        clientId: process.env.NUXT_OAUTH_GOOGLE_CLIENT_ID || '',
+        clientSecret: process.env.NUXT_OAUTH_GOOGLE_CLIENT_SECRET || '',
+      },
+    },
+    session: {
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      password: process.env.NUXT_SESSION_PASSWORD || '',
+    },
+    freeimage: {
+      apiKey: process.env.FREEIMAGE_API_KEY || '',
+    },
   },
 })

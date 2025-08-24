@@ -7,10 +7,10 @@
         :key="tab.key" 
         :to="tab.to"
       >
-        <Button size="sm" variant="ghost" class="relative" :class="{'tab-active': isActiveTab(tab.key)}">
+        <Button size="sm" variant="ghost" class="relative" :class="{'tab-active': isActiveTab(tab.to)}">
           {{ tab.label }}
           <motion.div 
-            v-if="isActiveTab(tab.key)" 
+            v-if="isActiveTab(tab.to)" 
             layout
             :layout-id="layoutId" 
             :initial="false"
@@ -20,13 +20,6 @@
         </Button>
       </NuxtLink>
     </div>
-    
-    <!-- Tab content -->
-    <Transition name="page" mode="out-in">
-      <div :key="activeTabKey">
-        <slot v-if="activeTabSlot" :name="activeTabSlot" />
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -38,7 +31,6 @@ interface TabConfig {
   key: string
   label: string
   to: string
-  slot: string
 }
 
 interface Props {
@@ -51,29 +43,21 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   layoutId: 'tab-highlighter',
-  tabContainerAttrs: () => ({})
+  tabContainerAttrs: () => ({}),
+  activeTab: undefined,
+  defaultTab: undefined,
 })
 
 const route = useRoute()
 
 const isActiveTab = (tabKey: string) => {
-  const currentTab = props.activeTab || route.query.tab as string
+  const currentTab = props.activeTab || route.path
   return currentTab === tabKey || (currentTab === undefined && tabKey === props.defaultTab)
 }
-
-const activeTabKey = computed(() => {
-  const currentTab = props.activeTab || route.query.tab as string
-  return currentTab || props.defaultTab || props.tabs[0]?.key
-})
-
-const activeTabSlot = computed(() => {
-  const activeTab = props.tabs.find(tab => tab.key === activeTabKey.value)
-  return activeTab?.slot
-})
 </script>
 
 <style scoped>
-@reference '../../../assets/css/tailwind.css';
+@reference '../../../assets/css/main.css';
 .tab-active {
   @apply !bg-none;
   &::before {
