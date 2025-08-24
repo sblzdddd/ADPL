@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
-  </div>
+  <NuxtLoadingIndicator color="#ffffff"/>
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
 </template>
