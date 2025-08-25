@@ -29,6 +29,39 @@ export default eventHandler((event) => {
         <title>${title}</title>
       </head>
       <body>
+             <style>
+         body {
+           position: relative;
+           margin: 0;
+           padding: 0;
+           min-height: 100vh;
+         }
+
+         .overlay-left, .overlay-right{
+            image-rendering: pixelated;
+            filter: grayscale(0.75);
+            height: 100%;
+            width: auto;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 1000;
+            position: fixed;
+         }
+         
+         .overlay-left {
+         transform: rotate(180deg);
+           top: 0;
+           left: -40px;
+         }
+         
+         .overlay-right {
+           bottom: 0;
+           right: 0;
+         }
+       </style>
+       
+       <img src="https://iili.io/Kdxqi8P.png" alt="Left Overlay" class="overlay-left">
+       <img src="https://iili.io/Kdob0sn.png" alt="Right Overlay" class="overlay-right">
         <script
           id="api-reference"
           data-configuration="${JSON.stringify(scalarConfig)
