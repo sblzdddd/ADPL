@@ -92,6 +92,11 @@ defineRouteMeta({
     parameters: [
       { in: "path", name: "id", required: true, schema: { type: 'string' } }
     ],
+    requestBody: {
+      content: {
+        'application/json': { schema: { $ref: '#/components/schemas/CommentPostRequest' } }
+      }
+    },
     responses: {
       '200': {
         description: 'Successful response',
