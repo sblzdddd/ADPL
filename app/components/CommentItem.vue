@@ -214,7 +214,7 @@ const addReply = async () => {
   submittingReply.value = true;
   
   try {
-    const response = await $fetch(`/api/paint-requests/${props.requestId}/comments`, {
+    const response = await $fetch<InternalApi['/api/paint-requests/:id/comments']['post']>(`/api/paint-requests/${props.requestId}/comments`, {
       method: 'POST',
       body: {
         content: replyContent.value.trim(),
@@ -245,7 +245,7 @@ const deleteComment = async () => {
   if (!confirm('Are you sure you want to delete this comment?')) return;
   
   try {
-    const response = await $fetch(`/api/paint-requests/${props.requestId}/comments/${props.comment._id}`, {
+    const response = await $fetch<InternalApi['/api/paint-requests/:id/comments/:commentId']['delete']>(`/api/paint-requests/${props.requestId}/comments/${props.comment._id}`, {
       method: 'DELETE'
     });
     
@@ -262,7 +262,7 @@ const deleteReply = async (replyId: string) => {
   if (!confirm('Are you sure you want to delete this reply?')) return;
   
   try {
-    const response = await $fetch(`/api/paint-requests/${props.requestId}/comments/${replyId}`, {
+    const response = await $fetch<InternalApi['/api/paint-requests/:id/comments/:commentId']['delete']>(`/api/paint-requests/${props.requestId}/comments/${replyId}`, {
       method: 'DELETE'
     });
     
@@ -292,7 +292,7 @@ const addReplyToReply = async (user: AuthUser, reply: PaintRequestComment) => {
   formState.submitting = true;
   
   try {
-    const response = await $fetch(`/api/paint-requests/${props.requestId}/comments`, {
+    const response = await $fetch<InternalApi['/api/paint-requests/:id/comments']['post']>(`/api/paint-requests/${props.requestId}/comments`, {
       method: 'POST',
       body: {
         content: formState.content.trim(),

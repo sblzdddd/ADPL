@@ -1,4 +1,5 @@
 import { PaintRequest } from '../../../models/PaintRequest';
+import type { PaintRequest as PaintRequestType } from '../../../../shared/types/paint_request';
 
 const logger = BakaLogger.child({'service': 'PaintRequestAPI'})
 
@@ -41,7 +42,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      data: paintRequest,
+      data: paintRequest as unknown as PaintRequestType,
       message: 'Successfully joined the paint request'
     };
   } catch (error) {

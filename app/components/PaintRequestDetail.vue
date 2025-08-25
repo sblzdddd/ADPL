@@ -190,17 +190,11 @@ const formatDate = (dateString: string) => {
   });
 };
 
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-}
-
 const joinRequest = async () => {
   joining.value = true;
   
   try {
-    const response = await $fetch<ApiResponse<PaintRequest>>(`/api/paint-requests/${request.value._id}/join`, {
+    const response = await $fetch<InternalApi['/api/paint-requests/:id/join']['post']>(`/api/paint-requests/${request.value._id}/join`, {
       method: 'POST'
     });
     

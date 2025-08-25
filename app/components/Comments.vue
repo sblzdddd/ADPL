@@ -74,7 +74,7 @@ const addComment = async () => {
   submittingComment.value = true;
   
   try {
-    const response = await $fetch(`/api/paint-requests/${props.requestId}/comments`, {
+    const response = await $fetch<InternalApi['/api/paint-requests/:id/comments']['post']>(`/api/paint-requests/${props.requestId}/comments`, {
       method: 'POST',
       body: {
         content: newComment.value.trim()

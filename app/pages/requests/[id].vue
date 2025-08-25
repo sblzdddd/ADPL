@@ -24,7 +24,7 @@
 
     <!-- Paint Request Detail -->
     <div v-else-if="paintRequest">
-      <PaintRequestDetail :request="paintRequest" />
+      <PaintRequestDetail :request="paintRequest.data.value?.data as PaintRequest" />
     </div>
   </div>
 </template>
@@ -36,54 +36,31 @@ import PaintRequestDetail from '~/components/PaintRequestDetail.vue';
 const route = useRoute();
 const loading = ref(false);
 const error = ref('');
-const paintRequest = ref<PaintRequest | null>(null);
 
 // Fetch paint request on page load
-onMounted(() => {
-  fetchPaintRequest();
+// onMounted(() => {
+//   fetchPaintRequest();
+// });
+
+const requestId = computed(() => route.params.id as string);
+
+await useFetch<
+  InternalApi['/api/paint-requests/:id']['get']
+>(`/api/paint-requests/${requestId.value}`, {
+  key: `paint-request-${requestId.value}`,
 });
 
-const fetchPaintRequest = async () => {
-  const id = route.params.id as string;
-  
-  if (!id) {
-    error.value = 'Invalid request ID';
-    return;
-  }
-  
-  loading.value = true;
-  error.value = '';
-  
-  try {
-    const response = await $fetch(`/api/paint-requests/${id}`);
-    
-    if (response.success) {
-      paintRequest.value = response.data as unknown as PaintRequest;
-    } else {
-      error.value = 'Failed to load paint request';
-    }
-  } catch (e) {
-    console.error('Error fetching paint request:', e);
-    const err = e as { statusCode?: number };
-    if (err?.statusCode === 404) {
-      error.value = 'Paint request not found';
-    } else {
-      error.value = 'Failed to load paint request. Please try again.';
-    }
-  } finally {
-    loading.value = false;
-  }
-};
+const paintRequest = useNuxtData<InternalApi['/api/paint-requests/:id']['get']>(`paint-request-${requestId.value}`);
 
 // Update page title when paint request is loaded
 watch(paintRequest, (newRequest) => {
   if (newRequest) {
     useHead({
-      title: `Paint Request - ${newRequest.owner.name}`,
+      title: `Paint Request - ${newRequest.data.value?.data.title}`,
       meta: [
         {
           name: 'description',
-          content: `Paint request with coordinates: TlX: ${newRequest.coordinates.TlX}, TlY: ${newRequest.coordinates.TlY}, Px: ${newRequest.coordinates.Px}, Py: ${newRequest.coordinates.Py}`
+          content: `Paint request with coordinates: TlX: ${newRequest.data.value?.data.coordinates.TlX}, TlY: ${newRequest.data.value?.data.coordinates.TlY}, Px: ${newRequest.data.value?.data.coordinates.Px}, Py: ${newRequest.data.value?.data.coordinates.Py}`
         }
       ]
     });

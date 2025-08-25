@@ -1,16 +1,10 @@
 import { PaintRequest } from '../../../models/PaintRequest';
-import type { ObjectId } from 'mongoose';
-import type { IUser } from '../../../models/User';
-import type { IComment } from '../../../models/PaintRequest';
+import type { PaintRequest as PaintRequestType } from '../../../../shared/types/paint_request';
 
 const logger = BakaLogger.child({'service': 'PaintRequestAPI'})
 
-interface PaintRequestWithComments {
-  _id: ObjectId | string;
-  owner: IUser;
-  participants: IUser[];
-  comments: IComment[];
-  commentsCount: number;
+type PaintRequestWithComments = PaintRequestType & {
+  comments: Comment[];
 }
 
 export default defineEventHandler(async (event) => {
@@ -36,7 +30,7 @@ export default defineEventHandler(async (event) => {
         ...paintRequest,
         comments: undefined,
         commentsCount: paintRequest.comments.length,
-      }
+      } as PaintRequestType
     };
   } catch (error) {
     if (error && typeof error === 'object' && 'statusCode' in error && 'statusMessage' in error) {
