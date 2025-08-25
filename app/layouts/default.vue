@@ -16,6 +16,10 @@
       <p class="text-sm text-gray-500">
         Version 1.0.0, created with ♥ by <a href="https://github.com/sblzdddd" target="_blank" class="text-blue-500">sblzdddd</a>
       </p>
+      <div class="flex gap-4 mt-2">
+        <NuxtLink to="/privacy" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">Privacy Policy</NuxtLink>
+        <NuxtLink to="/terms" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">Terms of Service</NuxtLink>
+      </div>
     </div>
   </div>
 </template>
