@@ -69,6 +69,14 @@
       <div class="lg:col-span-2 space-y-6">
         <!-- Image -->
         <div class="info-card relative !bg-gray-200 h-64">
+          <div class="absolute top-0 right-0 gap-2 p-4 flex items-center justify-center">
+            <Button variant="default" size="icon" class="shadow-md" @click="copyImage">
+              <Icon name="lucide:copy" size="20" />
+            </Button>
+            <Button variant="default" size="icon" class="shadow-md" @click="downloadImage">
+              <Icon name="lucide:download" size="20" />
+            </Button>
+          </div>
           <img 
             v-if="request.image?.url && !imageError"
             :src="request.image.url"
@@ -81,8 +89,12 @@
           </div>
           
           <!-- Image Upload in Edit Mode -->
-          <div v-if="isEditing" class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-            <div class="text-center text-white">
+          <div 
+            v-if="isEditing" 
+            class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+            @click="triggerImageUpload"
+          >
+            <div class="flex flex-col items-center justify-center">
               <Icon name="mdi:camera" size="48" class="mx-auto mb-2" />
               <span>Click to change image</span>
               <input
@@ -293,6 +305,7 @@ const isEditing = ref(false);
 const saving = ref(false);
 const newTag = ref('');
 const imageInput = ref<HTMLInputElement>();
+const selectedImageFile = ref<File | null>(null);
 
 // Edit data state
 const editData = ref({
@@ -337,6 +350,9 @@ const startEdit = () => {
 const cancelEdit = () => {
   isEditing.value = false;
   newTag.value = '';
+  selectedImageFile.value = null;
+  // Reset image to original state
+  imageError.value = false;
 };
 
 const addTag = () => {
@@ -353,9 +369,32 @@ const removeTag = (index: number) => {
 const handleImageChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
-    // Handle image change logic here if needed
-    console.log('Image changed:', target.files[0]);
+    const file = target.files[0];
+    console.log('Image changed:', file);
+    
+    // Create a preview URL for the selected image
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        // Update the local image preview
+        request.value.image = {
+          url: e.target.result as string,
+          size: file.size,
+          originalFilename: file.name
+        };
+        // Reset image error state
+        imageError.value = false;
+      }
+    };
+    reader.readAsDataURL(file);
+    
+    // Store the file for later upload
+    selectedImageFile.value = file;
   }
+};
+
+const triggerImageUpload = () => {
+  imageInput.value?.click();
 };
 
 const saveChanges = async () => {
@@ -369,6 +408,11 @@ const saveChanges = async () => {
     formData.append('coordinates', JSON.stringify(editData.value.coordinates));
     formData.append('tags', JSON.stringify(editData.value.tags));
     
+    // Add image file if a new one was selected
+    if (selectedImageFile.value) {
+      formData.append('image', selectedImageFile.value);
+    }
+    
     const response = await $fetch(`/api/paint-requests/${request.value._id}`, {
       method: 'PUT',
       body: formData
@@ -379,6 +423,7 @@ const saveChanges = async () => {
       Object.assign(request.value, response.data);
       isEditing.value = false;
       newTag.value = '';
+      selectedImageFile.value = null;
       
       // Show success message
       console.log('Paint request updated successfully!');
@@ -438,7 +483,7 @@ const joinRequest = async () => {
 const handleImageError = () => {
   imageError.value = true;
 };
-function convertCoordinatesToLatLng(tlX, tlY, pxX, pxY, zoom) {
+function convertCoordinatesToLatLng(tlX: number, tlY: number, pxX: number, pxY: number, zoom: number) {
     const TILE_SIZE = 1000;
     const totalTiles = Math.pow(2, zoom);
     const totalPixels = totalTiles * TILE_SIZE;
@@ -466,6 +511,76 @@ function convertCoordinatesToLatLng(tlX, tlY, pxX, pxY, zoom) {
 const openLocation = () => {
   const { lat, lng } = convertCoordinatesToLatLng(request.value.coordinates.TlX, request.value.coordinates.TlY, request.value.coordinates.Px, request.value.coordinates.Py, 11);
   window.open(`https://wplace.live/?lng=${lng}&lat=${lat}&zoom=14`, '_blank');
+};
+
+const copyImage = async () => {
+  if (!request.value.image?.url) {
+    console.warn('No image to copy');
+    return;
+  }
+
+  try {
+    // Fetch the image as a blob
+    const response = await fetch(request.value.image.url);
+    const blob = await response.blob();
+    
+    // Copy to clipboard using Clipboard API
+    if (navigator.clipboard && navigator.clipboard.write) {
+      const clipboardItem = new ClipboardItem({
+        [blob.type]: blob
+      });
+      await navigator.clipboard.write([clipboardItem]);
+      console.log('Image copied to clipboard successfully!');
+    } else {
+      // Fallback for older browsers
+      console.warn('Clipboard API not supported, falling back to copy image URL');
+      await navigator.clipboard.writeText(request.value.image.url);
+    }
+  } catch (error) {
+    console.error('Error copying image:', error);
+    // Fallback: copy the image URL
+    try {
+      await navigator.clipboard.writeText(request.value.image.url);
+      console.log('Image URL copied to clipboard');
+    } catch (fallbackError) {
+      console.error('Failed to copy image URL:', fallbackError);
+    }
+  }
+};
+
+const downloadImage = async () => {
+  if (!request.value.image?.url) {
+    console.warn('No image to download');
+    return;
+  }
+
+  try {
+    // Fetch the image as a blob
+    const response = await fetch(request.value.image.url);
+    const blob = await response.blob();
+    
+    // Create a download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Set filename - use original filename if available, otherwise generate one
+    const filename = request.value.image.originalFilename || 
+                   `paint-request-${request.value._id}.${blob.type.split('/')[1] || 'jpg'}`;
+    link.download = filename;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    console.log('Image downloaded successfully!');
+  } catch (error) {
+    console.error('Error downloading image:', error);
+  }
 };
 
 watch(() => props.request, (val) => {

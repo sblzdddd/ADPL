@@ -116,7 +116,7 @@ export default defineEventHandler(async (event) => {
 
     // Handle image upload if provided
     if (imageFile) {
-      const imageValidation = ImageTemplateSchema.safeParse(updateData.image);
+      const imageValidation = imageFileSchema("Image File", 2 * 1024 * 1024).safeParse(updateData.image);
       if (!imageValidation.success) {
         throw createError({
           statusCode: 400,

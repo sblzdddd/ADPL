@@ -13,7 +13,6 @@ export default defineNuxtConfig({
       title: 'AiD PLace',
       link: [
         { rel: 'icon', sizes: '64x64', href: '/icons/adpl-icon64.png' },
-        { rel: 'icon', type: 'image/svg+xml', sizes: 'any', href: '/icons/adpl-icon.svg' },
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/icons/adpl-icon32.png' },
         { rel: 'icon', type: 'image/png', sizes: '64x64', href: '/icons/adpl-icon64.png' },
         { rel: 'icon', type: 'image/png', sizes: '128x128', href: '/icons/adpl-icon128.png' },

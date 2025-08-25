@@ -14,7 +14,7 @@
     <div class="gap-2 w-full bg-background py-6 flex flex-col items-center justify-center">
       <img src="/adpl-title.png" alt="ADPL" class="w-full max-w-xs">
       <p class="text-sm text-gray-500">
-        Version 0.1.0, created with ♥ by <a href="https://github.com/sblzdddd" target="_blank" class="text-blue-500">sblzdddd</a>
+        Version 1.0.0, created with ♥ by <a href="https://github.com/sblzdddd" target="_blank" class="text-blue-500">sblzdddd</a>
       </p>
     </div>
   </div>

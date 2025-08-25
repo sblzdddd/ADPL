@@ -4,23 +4,7 @@ const logger = BakaLogger.child({'service': 'UserAPI'})
 
 export default defineEventHandler(async (event) => {
   try {
-    const userId = getRouterParam(event, 'id')
-    
-    if (!userId) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'User ID is required'
-      })
-    }
-
-    // Validate ObjectId format
-    if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid user ID format'
-      })
-    }
-
+    const { id: userId } = await parseRouteParams(event, paintRequestIdParam)
     const user = await User.findById(userId).select('-__v')
     
     if (!user) {
@@ -59,5 +43,43 @@ export default defineEventHandler(async (event) => {
       statusCode: 500,
       statusMessage: 'Internal server error'
     })
+  }
+})
+
+defineRouteMeta({
+  
+  openAPI: {
+    tags: ["User"],
+    description: "Get a user's profile",
+    parameters: [
+      {
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The ID of the user to get the profile of'
+      }
+    ],
+    responses: {
+      '200': {
+        description: 'Successful response',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/UserSchema' } } }
+      },
+      '401': {
+        description: 'Not authenticated',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
+      },
+      '404': {
+        description: 'Not found',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '500': {
+        description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      }
+    }
   }
 })
