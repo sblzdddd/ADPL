@@ -18,9 +18,9 @@ export default defineEventHandler(async (event) => {
     // Extract file and form fields
     const data = {
       image: formData.get('image') as File | null,
-      coordinates: formData.get('coordinates'),
-      tags: formData.get('tags'),
-      title: formData.get('title'),
+      coordinates: JSON.parse(formData.get('coordinates') as string),
+      tags: JSON.parse(formData.get('tags') as string),
+      title: formData.get('title') as string,
     }
     
     // Validate the data using Zod

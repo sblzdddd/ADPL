@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen py-8">
+  <div class="min-h-screen pt-8">
     <div class="w-full">
       <!-- Header -->
       <div class="mb-8">
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-3xl font-bold">Paint Requests</h1>
-          <NuxtLink to="/requests/create">
+          <NuxtLink to="/create">
             <Button
               variant="default"
             >
@@ -34,11 +34,12 @@
 
       <!-- Paint Requests Grid -->
       <div v-else-if="paintRequests.data.value && paintRequests.data.value.data.length > 0" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <PaintRequestCard
             v-for="request in paintRequests.data.value.data as PaintRequest[]"
             :key="request._id"
             :request="request"
+            :hide-user="false"
           />
         </div>
 
@@ -78,6 +79,15 @@
 import PaintRequestCard from '~/components/PaintRequestCard.vue';
 import { Button } from '~/components/ui/button';
 
+useHead({
+  title: 'Paint Requests - ADPL',
+  meta: [
+    {
+      name: 'description',
+      content: 'View all paint requests and create your own'
+    }
+  ]
+})
 
 const loading = ref(false);
 const error = ref('');
@@ -101,7 +111,8 @@ await useFetch('/api/paint-requests', {
     limit: 20,
     tags: filters.value.tags,
     owner: filters.value.owner
-  }
+  },
+  lazy: true
 });
 
 const paintRequests = useNuxtData<InternalApi['/api/paint-requests']['get']>('paint-requests');

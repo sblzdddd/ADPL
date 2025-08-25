@@ -1,5 +1,5 @@
 import { PaintRequest } from '../../../models/PaintRequest';
-import { objectIdSchemaCoerced, coordinatesSchema } from '../../../../shared/validators/common';
+import { coordinatesSchema } from '../../../../shared/validators/common';
 import { z } from 'zod';
 
 const logger = BakaLogger.child({'service': 'PaintRequestUpdateAPI'});
@@ -7,7 +7,7 @@ const logger = BakaLogger.child({'service': 'PaintRequestUpdateAPI'});
 export default defineEventHandler(async (event) => {
   try {
     // Get paint request ID from URL params
-    const params = await parseRouteParams(event, objectIdSchemaCoerced('Paint Request ID'));
+    const params = await parseRouteParams(event, paintRequestIdParam);
     const paintRequestId = params.id;
     const user = event.context.user;
 
@@ -98,9 +98,11 @@ export default defineEventHandler(async (event) => {
     // Validate all fields at once using a single validation schema
     const updateValidationSchema = z.object({
       coordinates: coordinates ? coordinatesSchema : z.undefined(),
-      tags: tags ? z.array(z.string().min(3).max(100).trim()) : z.undefined(),
-      title: title ? z.string().min(3).max(100).trim() : z.undefined(),
+      tags: tags ? z.array(z.string().min(1).max(100).trim()) : z.undefined(),
+      title: title ? z.string().min(1).max(100).trim() : z.undefined(),
     }).partial();
+
+    console.log(1)
 
     const validationResult = updateValidationSchema.safeParse(updateData);
     if (!validationResult.success) {

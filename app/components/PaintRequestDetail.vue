@@ -2,15 +2,63 @@
   <div class="mx-auto mb-40 rounded-lg">
     <!-- Header -->
     <div class="mb-6">
-      <div class="flex items-center gap-2 mb-4">
-        <NuxtLink
-          to="/requests"
-        >
-          <Button variant="ghost" size="icon">
-            <Icon name="mdi:arrow-left" size="25" />
-          </Button>
-        </NuxtLink>
-        <h1 class="text-3xl font-bold">{{ request.title }}</h1>
+      <div class="flex items-center justify-between gap-2 mb-4">
+        <div class="flex items-center gap-2">
+          <NuxtLink
+            to="/requests"
+          >
+            <Button variant="ghost" size="icon">
+              <Icon name="mdi:arrow-left" size="25" />
+            </Button>
+          </NuxtLink>
+          <h1 v-if="!isEditing" class="text-3xl font-bold">{{ request.title }}</h1>
+          <Input
+            v-else
+            v-model="editData.title"
+            placeholder="Enter title"
+            size="lg"
+          />
+        </div>
+        
+        <!-- Edit/Delete Actions -->
+        <AuthState v-slot="{ loggedIn, user }">
+          <div v-if="loggedIn && user && isOwner(user)" class="flex items-center gap-2">
+            <Button
+              v-if="!isEditing"
+              variant="outline"
+              @click="startEdit"
+            >
+              <Icon name="lucide:pencil" size="16" />
+              <span class="hidden md:block">Edit</span>
+            </Button>
+            <Button
+              v-if="!isEditing"
+              variant="destructive"
+              @click="confirmDelete"
+            >
+              <Icon name="lucide:trash" size="16" />
+              <span class="hidden md:block">Delete</span>
+            </Button>
+            <Button
+              v-if="isEditing"
+              variant="default"
+              :disabled="saving"
+              @click="saveChanges"
+            >
+              <Icon name="lucide:save" size="16" />
+              <span v-if="saving" class="hidden md:block">Saving...</span>
+              <span v-else class="hidden md:block">Save</span>
+            </Button>
+            <Button
+              v-if="isEditing"
+              variant="outline"
+              @click="cancelEdit"
+            >
+              <Icon name="lucide:x" size="16" />
+              <span class="hidden md:block">Cancel</span>
+            </Button>
+          </div>
+        </AuthState>
       </div>
       
     </div>
@@ -20,7 +68,7 @@
       <!-- Left Column - Details -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Image -->
-        <div class="info-card !bg-gray-200 h-64">
+        <div class="info-card relative !bg-gray-200 h-64">
           <img 
             v-if="request.image?.url && !imageError"
             :src="request.image.url"
@@ -31,30 +79,70 @@
           <div v-else class="w-full h-full flex items-center justify-center">
             <div class="text-gray-500">No Image</div>
           </div>
+          
+          <!-- Image Upload in Edit Mode -->
+          <div v-if="isEditing" class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+            <div class="text-center text-white">
+              <Icon name="mdi:camera" size="48" class="mx-auto mb-2" />
+              <span>Click to change image</span>
+              <input
+                ref="imageInput"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="handleImageChange"
+              >
+            </div>
+          </div>
         </div>
+        
         <!-- Coordinates -->
         <div class="info-card">
           <div class="flex flex-row justify-between">
             <h3 class="text-lg font-semibold mb-3">Coordinates</h3>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" @click="openLocation">
               <Icon name="mdi:open-in-new" size="20" />
             </Button>
           </div>
           <div class="grid grid-cols-4 gap-2">
             <div class="text-center">
-              <div class="text-2xl font-bold text-blue-600">{{ request.coordinates.TlX }}</div>
+              <div v-if="!isEditing" class="text-2xl font-bold text-blue-600">{{ request.coordinates.TlX }}</div>
+              <Input
+                v-else
+                v-model.number="editData.coordinates.TlX"
+                type="number"
+                class="text-center pl-6 font-bold text-blue-600"
+              />
               <div class="text-sm">Top Left X</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-blue-600">{{ request.coordinates.TlY }}</div>
+              <div v-if="!isEditing" class="text-2xl font-bold text-blue-600">{{ request.coordinates.TlY }}</div>
+              <Input
+                v-else
+                v-model.number="editData.coordinates.TlY"
+                type="number"
+                class="text-center pl-6 font-bold text-blue-600"
+              />
               <div class="text-sm">Top Left Y</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-blue-600">{{ request.coordinates.Px }}</div>
+              <div v-if="!isEditing" class="text-2xl font-bold text-blue-600">{{ request.coordinates.Px }}</div>
+              <Input
+                v-else
+                v-model.number="editData.coordinates.Px"
+                type="number"
+                class="text-center pl-6 font-bold text-blue-600"
+              />
               <div class="text-sm">Point X</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-blue-600">{{ request.coordinates.Py }}</div>
+              <div v-if="!isEditing" class="text-2xl font-bold text-blue-600">{{ request.coordinates.Py }}</div>
+              <Input
+                v-else
+                v-model.number="editData.coordinates.Py"
+                type="number"
+                class="text-center pl-6 font-bold text-blue-600"
+              />
               <div class="text-sm">Point Y</div>
             </div>
           </div>
@@ -63,14 +151,40 @@
         <!-- Tags -->
         <div class="info-card">
           <h3 class="text-lg font-semibold mb-3">Tags</h3>
-          <div class="flex flex-wrap gap-2">
+          <div v-if="!isEditing" class="flex flex-wrap gap-2">
             <span
               v-for="tag in request.tags"
               :key="tag"
-              class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+              class="px-3 py-1 bg-blue-600/10 text-blue-400 rounded-full text-sm"
             >
               {{ tag }}
             </span>
+          </div>
+          <div v-else class="space-y-2">
+            <div class="flex flex-wrap gap-2">
+              <span
+                v-for="(tag, index) in editData.tags"
+                :key="index"
+                class="px-3 py-1 bg-blue-600/10 text-blue-400 rounded-full text-sm flex items-center gap-1"
+              >
+                {{ tag }}
+                <button
+                  class="text-blue-600 hover:text-blue-800"
+                  @click="removeTag(index)"
+                >
+                  <Icon name="mdi:close" size="14" />
+                </button>
+              </span>
+            </div>
+            <div class="flex gap-2">
+              <Input
+                v-model="newTag"
+                placeholder="Add new tag"
+                class="flex-1"
+                @keyup.enter="addTag"
+              />
+              <Button variant="outline" size="sm" @click="addTag">Add</Button>
+            </div>
           </div>
         </div>
 
@@ -92,7 +206,9 @@
               <span class="text-lg">{{ request.owner?.name?.charAt(0) }}</span>
             </div>
             <div>
-              <div class="font-medium">{{ request.owner?.name }}</div>
+              <NuxtLink :to="`/user/${request.owner?._id}`">
+                <div class="font-medium">{{ request.owner?.name }}</div>
+              </NuxtLink>
               <div class="text-sm">{{ request.owner?.email }}</div>
             </div>
           </div>
@@ -116,7 +232,9 @@
               <div v-else class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                 <span class="text-sm">{{ participant.name.charAt(0) }}</span>
               </div>
-              <span class="text-sm">{{ participant.name }}</span>
+              <NuxtLink :to="`/user/${participant?._id}`">
+                <span class="text-sm">{{ participant.name }}</span>
+              </NuxtLink>
             </div>
           </div>
           <div v-else class="text-gray-500 text-sm">No participants yet</div>
@@ -132,7 +250,7 @@
               <span v-if="joining">Joining...</span>
               <span v-else>Join Request</span>
             </Button>
-          </AuthState>
+          </AuthState> 
         </div>
 
         <!-- Request Info -->
@@ -159,6 +277,7 @@
 
 <script setup lang="ts">
 import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
 import type { PaintRequest } from '../../shared/types/paint_request';
 
 interface Props {
@@ -170,6 +289,22 @@ const props = defineProps<Props>();
 const request = ref<PaintRequest>(props.request);
 const joining = ref(false);
 const imageError = ref(false);
+const isEditing = ref(false);
+const saving = ref(false);
+const newTag = ref('');
+const imageInput = ref<HTMLInputElement>();
+
+// Edit data state
+const editData = ref({
+  title: '',
+  coordinates: {
+    TlX: 0,
+    TlY: 0,
+    Px: 0,
+    Py: 0
+  },
+  tags: [] as string[]
+});
 
 const isOwner = (user: AuthUser) => {
   return !!user && user.id === request.value.owner._id;
@@ -188,6 +323,94 @@ const formatDate = (dateString: string) => {
     hour: '2-digit',
     minute: '2-digit'
   });
+};
+
+const startEdit = () => {
+  editData.value = {
+    title: request.value.title,
+    coordinates: { ...request.value.coordinates },
+    tags: [...request.value.tags]
+  };
+  isEditing.value = true;
+};
+
+const cancelEdit = () => {
+  isEditing.value = false;
+  newTag.value = '';
+};
+
+const addTag = () => {
+  if (newTag.value.trim() && !editData.value.tags.includes(newTag.value.trim())) {
+    editData.value.tags.push(newTag.value.trim());
+    newTag.value = '';
+  }
+};
+
+const removeTag = (index: number) => {
+  editData.value.tags.splice(index, 1);
+};
+
+const handleImageChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    // Handle image change logic here if needed
+    console.log('Image changed:', target.files[0]);
+  }
+};
+
+const saveChanges = async () => {
+  saving.value = true;
+  
+  try {
+    const formData = new FormData();
+    
+    // Add all the edit data to form data
+    formData.append('title', editData.value.title);
+    formData.append('coordinates', JSON.stringify(editData.value.coordinates));
+    formData.append('tags', JSON.stringify(editData.value.tags));
+    
+    const response = await $fetch(`/api/paint-requests/${request.value._id}`, {
+      method: 'PUT',
+      body: formData
+    });
+    
+    if (response.success) {
+      // Update the local request data
+      Object.assign(request.value, response.data);
+      isEditing.value = false;
+      newTag.value = '';
+      
+      // Show success message
+      console.log('Paint request updated successfully!');
+    }
+  } catch (error) {
+    console.error('Error updating paint request:', error);
+    // Handle error (show toast, etc.)
+  } finally {
+    saving.value = false;
+  }
+};
+
+const confirmDelete = async () => {
+  if (confirm('Are you sure you want to delete this paint request? This action cannot be undone.')) {
+    await deleteRequest();
+  }
+};
+
+const deleteRequest = async () => {
+  try {
+    const response = await $fetch(`/api/paint-requests/${request.value._id}`, {
+      method: 'DELETE'
+    });
+    
+    if (response.success) {
+      // Redirect to requests list
+      await navigateTo('/requests');
+    }
+  } catch (error) {
+    console.error('Error deleting paint request:', error);
+    // Handle error (show toast, etc.)
+  }
 };
 
 const joinRequest = async () => {
@@ -214,6 +437,35 @@ const joinRequest = async () => {
 
 const handleImageError = () => {
   imageError.value = true;
+};
+function convertCoordinatesToLatLng(tlX, tlY, pxX, pxY, zoom) {
+    const TILE_SIZE = 1000;
+    const totalTiles = Math.pow(2, zoom);
+    const totalPixels = totalTiles * TILE_SIZE;
+
+    // 1. Calculate the total pixel position from the world's top-left corner (0,0)
+    const totalPxX = (tlX * TILE_SIZE) + pxX;
+    const totalPxY = (tlY * TILE_SIZE) + pxY;
+
+    // 2. Normalize the pixel coordinates to a value between 0 and 1
+    const normalizedX = totalPxX / totalPixels;
+    const normalizedY = totalPxY / totalPixels;
+
+    // 3. Convert normalized coordinates back to lat/lng using inverse Mercator projection
+    // Longitude is a linear mapping from normalized X
+    const lng = (normalizedX * 360) - 180;
+
+    // Latitude requires the inverse Mercator projection formula
+    // The formula is derived from: y_norm = 0.5 - atanh(sin(lat_rad)) / (2 * PI)
+    const latRad = Math.atan(Math.sinh(Math.PI * (1 - 2 * normalizedY)));
+    const lat = latRad * (180 / Math.PI);
+
+    return { lat, lng };
+}
+
+const openLocation = () => {
+  const { lat, lng } = convertCoordinatesToLatLng(request.value.coordinates.TlX, request.value.coordinates.TlY, request.value.coordinates.Px, request.value.coordinates.Py, 11);
+  window.open(`https://wplace.live/?lng=${lng}&lat=${lat}&zoom=14`, '_blank');
 };
 
 watch(() => props.request, (val) => {

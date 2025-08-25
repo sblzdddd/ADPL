@@ -34,22 +34,24 @@
 
         <!-- Owner and participants -->
         <div class="mb-3">
-          <div class="flex items-center gap-2 mb-2">
-            <img 
-              v-if="request.owner?.picture" 
-              :src="request.owner.picture" 
-              :alt="request.owner.name"
-              class="w-6 h-6 rounded-full"
-            >
-            <div v-else class="w-6 h-6 bg-muted rounded-full flex items-center justify-center">
-              <span class="text-xs text-muted-foreground">{{ request.owner?.name?.charAt(0) }}</span>
+          <NuxtLink :to="`/user/${request.owner?._id}`">
+            <div v-if="!hideUser" class="flex items-center gap-2 mb-2">
+              <img 
+                v-if="request.owner?.picture" 
+                :src="request.owner.picture" 
+                :alt="request.owner.name"
+                class="w-6 h-6 rounded-full"
+              >
+              <div v-else class="w-6 h-6 bg-muted rounded-full flex items-center justify-center">
+                <span class="text-xs text-muted-foreground">{{ request.owner?.name?.charAt(0) }}</span>
+              </div>
+              <span class="text-sm text-muted-foreground">{{ request.owner?.name }}</span>
             </div>
-            <span class="text-sm text-muted-foreground">{{ request.owner?.name }}</span>
-          </div>
-          
-          <div v-if="request.participants?.length > 0" class="text-xs text-gray-500">
-            {{ request.participants.length }} participant(s)
-          </div>
+            
+            <div v-if="request.participants?.length > 0" class="text-xs text-gray-500">
+              {{ request.participants.length }} participant(s)
+            </div>
+          </NuxtLink>
         </div>
 
         <!-- Tags -->
@@ -58,7 +60,7 @@
             <span 
               v-for="tag in request.tags" 
               :key="tag"
-              class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+              class="px-2 py-1 bg-blue-800/20 text-blue-400 text-xs rounded-full"
             >
               {{ tag }}
             </span>
@@ -81,6 +83,7 @@
 <script setup lang="ts">
 interface Props {
   request: PaintRequest;
+  hideUser: boolean;
 }
 
 defineProps<Props>();

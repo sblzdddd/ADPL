@@ -4,7 +4,7 @@ import { UserSchema } from "./user";
 
 export const CreatePaintRequestRequest = z.object({
   coordinates: coordinatesSchema,
-  tags: z.array(z.string().min(3).max(100).trim()).default([]).meta({
+  tags: z.array(z.string().min(1).max(100).trim()).default([]).meta({
     description: 'Tags for the paint request',
     example: ['tag1', 'tag2'],
   }),
@@ -65,7 +65,7 @@ export const UpdatePaintRequestRequest = z.object({
     description: 'Coordinates for the paint request',
     example: { TlX: 0, TlY: 0, Px: 100, Py: 100 },
   }),
-  tags: z.array(z.string().min(3).max(100).trim()).optional().meta({
+  tags: z.array(z.string().min(1).max(100).trim()).optional().meta({
     description: 'Tags for the paint request',
     example: ['tag1', 'tag2'],
   }),

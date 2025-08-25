@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen py-8">
+  <div class="min-h-full pt-8">
       <!-- Loading State -->
     <div v-if="loading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-      <p class="mt-2 text-gray-600">Loading paint request...</p>
+      <p class="mt-2">Loading paint request...</p>
     </div>
 
     <!-- Error State -->
@@ -56,11 +56,11 @@ const paintRequest = useNuxtData<InternalApi['/api/paint-requests/:id']['get']>(
 watch(paintRequest, (newRequest) => {
   if (newRequest) {
     useHead({
-      title: `Paint Request - ${newRequest.data.value?.data.title}`,
+      title: `${newRequest.data.value?.data.title} - ADPL`,
       meta: [
         {
           name: 'description',
-          content: `Paint request with coordinates: TlX: ${newRequest.data.value?.data.coordinates.TlX}, TlY: ${newRequest.data.value?.data.coordinates.TlY}, Px: ${newRequest.data.value?.data.coordinates.Px}, Py: ${newRequest.data.value?.data.coordinates.Py}`
+          content: `Paint request with coordinates: ${newRequest.data.value?.data.coordinates.TlX}, ${newRequest.data.value?.data.coordinates.TlY}, ${newRequest.data.value?.data.coordinates.Px}, ${newRequest.data.value?.data.coordinates.Py}`
         }
       ]
     });

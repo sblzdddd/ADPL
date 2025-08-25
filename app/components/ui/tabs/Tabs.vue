@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Tab buttons -->
-    <div class="w-full flex gap-2 mb-6" v-bind="tabContainerAttrs">
+    <div class="w-full flex gap-2" v-bind="tabContainerAttrs">
       <NuxtLink 
         v-for="tab in tabs" 
         :key="tab.key" 
@@ -52,7 +52,10 @@ const route = useRoute()
 
 const isActiveTab = (tabKey: string) => {
   const currentTab = props.activeTab || route.path
-  return currentTab === tabKey || (currentTab === undefined && tabKey === props.defaultTab)
+  if(tabKey === '/requests') {
+    return currentTab.includes(tabKey)
+  }
+  return (currentTab === tabKey || (currentTab === undefined && tabKey === props.defaultTab))
 }
 </script>
 

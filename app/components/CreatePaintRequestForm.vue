@@ -18,7 +18,13 @@
         <label class="block text-sm font-medium mb-3">
           Image (PNG, max 2MB)
         </label>
-        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+        <div 
+          class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
+          :class="{ 'border-blue-400 bg-blue-50': isDragOver }"
+          @dragover.prevent="handleDragOver"
+          @dragleave.prevent="handleDragLeave"
+          @drop.prevent="handleDrop"
+        >
           <input
             ref="fileInput"
             type="file"
@@ -114,15 +120,16 @@
             <span
               v-for="tag in form.tags"
               :key="tag"
-              class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-1"
+              class="px-3 py-1 bg-blue-800/20 text-blue-400 rounded-full text-sm flex items-center gap-1"
             >
               {{ tag }}
               <Button
                 variant="ghost"
-                class="!text-blue-600"
+                size="icon"
+                class="!text-blue-600 w-6 h-6"
                 @click="removeTag(tag)"
               >
-                ×
+                <Icon name="mdi:close" size="16" />
               </Button>
             </span>
           </div>
@@ -172,6 +179,7 @@ const previewUrl = ref<string>('');
 const fileError = ref<string>('');
 const isSubmitting = ref(false);
 const newTag = ref('');
+const isDragOver = ref(false);
 
 const form = ref<FormData>({
   title: '',
@@ -234,6 +242,40 @@ const removeTag = (tag: string) => {
   if (index > -1) {
     form.value.tags.splice(index, 1);
   }
+};
+
+const handleDragOver = () => {
+  isDragOver.value = true;
+};
+
+const handleDragLeave = () => {
+  isDragOver.value = false;
+};
+
+const handleDrop = (event: DragEvent) => {
+  isDragOver.value = false;
+  const file = event.dataTransfer?.files?.[0];
+  if (!file) return;
+
+
+  if (file.type !== 'image/png') {
+    fileError.value = 'Only PNG files are allowed';
+    return;
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    fileError.value = 'File size must be less than 2MB';
+    return;
+  }
+
+  selectedFile.value = file;
+  fileError.value = '';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewUrl.value = e.target?.result as string;
+  };
+  reader.readAsDataURL(file);
 };
 
 const handleSubmit = async () => {

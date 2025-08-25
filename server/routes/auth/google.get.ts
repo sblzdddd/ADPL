@@ -1,4 +1,5 @@
 import { User } from '../../models/User';
+import { uploadToFreeimage } from '../../utils/image_uploader';
 
 export default defineOAuthGoogleEventHandler({
   async onSuccess(event, { user, tokens: _tokens }) {
@@ -13,19 +14,53 @@ export default defineOAuthGoogleEventHandler({
       // Check if user already exists
       let dbUser = await User.findOne({ email: user.email });
       
+      let pictureUrl: string | undefined;
+      
+      // If user has a picture, download and upload it to FreeImage.host
+      if (user.picture) {
+        try {
+          console.log('Downloading user profile picture from Google...');
+          
+          // Download the image from Google
+          const response = await fetch(user.picture);
+          if (!response.ok) {
+            throw new Error(`Failed to download image: ${response.status}`);
+          }
+          
+          const imageBuffer = await response.arrayBuffer();
+          const imageBlob = new Blob([imageBuffer]);
+          
+          // Create a File object from the blob
+          const imageFile = new File([imageBlob], 'profile-picture.jpg', {
+            type: 'image/jpeg'
+          });
+          
+          // Upload to FreeImage.host
+          console.log('Uploading profile picture to FreeImage.host...');
+          const uploadResult = await uploadToFreeimage(imageFile);
+          pictureUrl = uploadResult.url;
+          
+          console.log('Profile picture uploaded successfully:', pictureUrl);
+        } catch (uploadError) {
+          console.error('Failed to upload profile picture:', uploadError);
+          // Continue without the picture if upload fails
+          pictureUrl = undefined;
+        }
+      }
+      
       if (!dbUser) {
         // Create new user if they don't exist
         const userData = {
           email: user.email,
           name: user.name,
-          picture: user.picture || undefined,
+          picture: pictureUrl,
         };
         console.log('Creating user with data:', userData); // Debug log
         dbUser = await User.create(userData);
       } else {
         // Update existing user's information
         dbUser.name = user.name;
-        dbUser.picture = user.picture || undefined;
+        dbUser.picture = pictureUrl;
         await dbUser.save();
       }
 

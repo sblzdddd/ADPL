@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen">
+  <div class="min-h-full mb-24">
     <div class="w-full">
       <!-- Header -->
       <div class="mb-8">

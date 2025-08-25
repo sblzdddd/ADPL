@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full min-h-screen">
+  <div class="w-full min-h-full">
     <div class="w-full flex flex-col items-center justify-center gap-10 py-20">
       <img src="/adpl-title.png" alt="Aid PLACE" class="w-1/2 max-w-md">
       <div class="text-center space-y-4">
@@ -61,7 +61,7 @@ import { Button } from '~/components/ui/button';
 
 // Set page title
 useHead({
-  title: 'Aid PLACE - Home',
+  title: 'Aid PLACE',
   meta: [
     {
       name: 'description',
