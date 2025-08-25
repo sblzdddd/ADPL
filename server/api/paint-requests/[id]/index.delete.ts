@@ -1,12 +1,11 @@
 import { PaintRequest } from '../../../models/PaintRequest';
-import { objectIdSchemaCoerced } from '../../../../shared/validators/common';
 
 const logger = BakaLogger.child({'service': 'PaintRequestDeleteAPI'});
 
 export default defineEventHandler(async (event) => {
   try {
     // Get paint request ID from URL params
-    const params = await parseRouteParams(event, objectIdSchemaCoerced('Paint Request ID'));
+    const params = await parseRouteParams(event, paintRequestIdParam);
     const paintRequestId = params.id;
 
     // Get current user from context (set by auth middleware)

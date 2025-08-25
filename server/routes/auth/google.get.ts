@@ -17,7 +17,7 @@ export default defineOAuthGoogleEventHandler({
       let pictureUrl: string | undefined;
       
       // If user has a picture, download and upload it to FreeImage.host
-      if (user.picture && !dbUser) {
+      if (user.picture && (!dbUser || (dbUser && !dbUser.picture))) {
         try {
           console.log('Downloading user profile picture from Google...');
           
@@ -57,9 +57,7 @@ export default defineOAuthGoogleEventHandler({
         };
         console.log('Creating user with data:', userData); // Debug log
         dbUser = await User.create(userData);
-      } else {
-        // Update existing user's information
-        dbUser.name = user.name;
+      } else if (pictureUrl) {
         dbUser.picture = pictureUrl;
         await dbUser.save();
       }

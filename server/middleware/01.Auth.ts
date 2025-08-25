@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   
   // Define endpoints that require authentication for specific methods only
   const methodSpecificEndpoints = [
-    { path: '/api/user', methods: ['GET', 'POST', 'PUT'] },
+    { path: '/api/user', methods: ['POST', 'PUT'] },
     { path: '/api/paint-requests', methods: ['POST', 'PUT', 'DELETE'] },
   ]
   
