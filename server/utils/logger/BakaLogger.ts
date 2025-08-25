@@ -1,27 +1,11 @@
-/* eslint-disable no-control-regex */
 import winston from "winston";
-import path from "path";
 import { levelColors, serviceBgColors, whiteText, resetColor } from "./ConsoleColors";
-import fs from "fs";
 
 import * as Sentry from "@sentry/nuxt";
 import Transport from 'winston-transport';
 
 const SentryWinstonTransport = Sentry.createSentryWinstonTransport(Transport);
 
-
-
-// Get current date for log file names
-const logFileName = new Date().toLocaleString('zh-CN').replaceAll("/", "-").replaceAll(" ", "_").replaceAll(/:/g, '.');
-
-const logFolder = process.env.NODE_ENV === 'development' ? 'logs/dev/' : 'logs/';
-
-// in development mode, clean logs folder
-if (process.env.NODE_ENV === 'development') {
-  fs.rmSync(path.join(process.cwd(), logFolder), { recursive: true, force: true });
-}
-
-const ansiRegex = /\u001b\[[0-9;]+m/g;
 
 // Determine log level based on environment
 const logLevel = process.env.NODE_ENV === 'development' ? 'debug' : 'info';
@@ -63,31 +47,6 @@ const logger = winston.createLogger({
       format: winston.format.combine(
         consoleFormat
       )
-    }),
-    
-    // Combined log file
-    new winston.transports.File({
-      filename: path.join(process.cwd(), logFolder, `${logFileName}.log`),
-      format: winston.format.combine(
-        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
-          const newMessage = (message as string).replaceAll(ansiRegex, '');
-          return `${timestamp} ${service} ${level.toUpperCase()}: ${newMessage} ${Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''}`;
-        })
-      )
-    }),
-    
-    // Error log file
-    new winston.transports.File({
-      filename: path.join(process.cwd(), logFolder, `${logFileName}.err.log`),
-      level: 'error',
-      format: winston.format.combine(
-        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        winston.format.printf(({ timestamp, level, message, stack, service, ...meta }) => {
-          message = (message as string).replaceAll(ansiRegex, '');
-          return `${timestamp} ${service} ${level.toUpperCase()}: ${message}${stack ? '\n' + stack : ''} ${Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''}`;
-        })
-      ),
     }),
 
     new SentryWinstonTransport({
