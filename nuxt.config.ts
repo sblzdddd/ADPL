@@ -70,20 +70,20 @@ export default defineNuxtConfig({
       tasks: true,
     },
     openAPI: {
-      route: "/docs/openapi.json",
+      route: "/_hidden/openapi.json",
       meta: {
         title: 'ADPL API',
-        description: 'ADPL API is the RESTful API for ADPL.',
+        description: 'ADPL API is the RESTful API for AiD PLACE.',
         version: '1.0',
       },
       production: "runtime",
       ui: {
         scalar: {
-          route: "/docs/scalar",
+          route: "/_hidden/scalar",
           theme: 'default'
         },
         swagger: {
-          route: "/docs/swagger",
+          route: "/_hidden/swagger",
         }
       }
     },

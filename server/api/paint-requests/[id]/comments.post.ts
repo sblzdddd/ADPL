@@ -1,34 +1,19 @@
 import mongoose from 'mongoose';
 import { PaintRequest } from '../../../models/PaintRequest';
 
+const logger = BakaLogger.child({'service': 'CommentAPI'})
+
 export default defineEventHandler(async (event) => {
   try {
-    const id = getRouterParam(event, 'id');
-    const body = await readBody(event);
-    const { content, parentComment } = body;
-    
-    if (!id) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Request ID is required'
-      });
-    }
-
-    if (!content || typeof content !== 'string' || content.trim().length === 0) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Comment content is required'
-      });
-    }
-
     // Get the current user from the session
     const user = event.context.user;
-    if (!user) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Unauthorized'
-      });
+    const { id } = await parseRouteParams(event, paintRequestIdParam)
+    const result = await readValidatedBody(event, CommentPostRequest.safeParse)
+    if (!result.success) {
+      throw createError({statusCode: 400, statusMessage: result.error.message})
     }
+    const { content, parentComment } = result.data
+
 
     const paintRequest = await PaintRequest.findById(id);
     if (!paintRequest) {
@@ -41,7 +26,7 @@ export default defineEventHandler(async (event) => {
     // If this is a reply, validate the parent comment exists
     if (parentComment) {
       const parentCommentExists = paintRequest.comments.find(
-        comment => comment._id.toString() === parentComment
+        comment => comment._id.toString() === parentComment.toString()
       );
       if (!parentCommentExists) {
         throw createError({
@@ -67,7 +52,7 @@ export default defineEventHandler(async (event) => {
     // If this is a reply, add it to the parent comment's replies array
     if (parentComment) {
       const parentCommentIndex = paintRequest.comments.findIndex(
-        comment => comment._id.toString() === parentComment
+        comment => comment._id.toString() === parentComment.toString()
       );
       if (parentCommentIndex !== -1) {
         if (!paintRequest.comments[parentCommentIndex].replies) {
@@ -88,16 +73,46 @@ export default defineEventHandler(async (event) => {
       message: 'Comment added successfully'
     };
   } catch (error) {
-    console.error('Error adding comment:', error);
-    if(error instanceof Error && 'statusCode' in error && 'statusMessage' in error) {
-      throw createError({
-        statusCode: error.statusCode as number,
-        statusMessage: error.statusMessage as string
-      });
+    if (error && typeof error === 'object' && 'statusCode' in error && 'statusMessage' in error) {
+      throw error;
     }
+    logger.error('CommentAPI: Server Error adding comment', {error})
     throw createError({
       statusCode: 500,
-      statusMessage: 'Internal server error'
-    });
+      statusMessage: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
   }
 });
+
+defineRouteMeta({
+  openAPI: {
+    tags: ["Comments"],
+    description: "Add a comment under a paint request",
+    parameters: [
+      { in: "path", name: "id", required: true, schema: { type: 'string' } }
+    ],
+    responses: {
+      '200': {
+        description: 'Successful response',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/CommentListResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '404': {
+        description: 'Paint Request Not Found',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '500': {
+        description: 'Internal Server Error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      }
+    }
+  }
+})

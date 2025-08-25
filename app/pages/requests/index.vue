@@ -33,31 +33,31 @@
       </div>
 
       <!-- Paint Requests Grid -->
-      <div v-else-if="paintRequests.length > 0" class="space-y-6">
+      <div v-else-if="paintRequests.data.value && paintRequests.data.value.data.length > 0" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <PaintRequestCard
-            v-for="request in paintRequests"
+            v-for="request in paintRequests.data.value.data as PaintRequest[]"
             :key="request._id"
             :request="request"
           />
         </div>
 
         <!-- Pagination -->
-        <div v-if="pagination.pages > 1" class="flex items-center justify-center gap-2">
+        <div v-if="paintRequests.data.value.pagination.pages > 1" class="flex items-center justify-center gap-2">
           <Button
-            :disabled="pagination.page <= 1"
-            @click="changePage(pagination.page - 1)"
+            :disabled="currentPage <= 1"
+            @click="changePage(currentPage - 1)"
           >
             Previous
           </Button>
           
           <span class="px-3 py-2 text-gray-700">
-            Page {{ pagination.page }} of {{ pagination.pages }}
+            Page {{ currentPage }} of {{ paintRequests.data.value.pagination.pages }}
           </span>
           
           <Button
-            :disabled="pagination.page >= pagination.pages"
-            @click="changePage(pagination.page + 1)"
+            :disabled="currentPage >= paintRequests.data.value.pagination.pages"
+            @click="changePage(currentPage + 1)"
           >
             Next
           </Button>
@@ -78,56 +78,49 @@
 import PaintRequestCard from '~/components/PaintRequestCard.vue';
 import { Button } from '~/components/ui/button';
 
-interface Pagination {
-  page: number;
-  limit: number;
-  total: number;
-  pages: number;
-}
 
 const loading = ref(false);
 const error = ref('');
-const paintRequests = ref<PaintRequest[]>([]);
-const pagination = ref<Pagination>({
-  page: 1,
-  limit: 12,
-  total: 0,
-  pages: 0
-});
 const filters = ref({
   tags: '',
   owner: ''
 });
+
+const currentPage = ref(1);
 
 // Fetch paint requests on page load
 onMounted(() => {
   fetchPaintRequests();
 });
 
+await useFetch('/api/paint-requests', {
+  method: 'GET',
+  key: 'paint-requests',
+  query: {
+    page: currentPage.value,
+    limit: 20,
+    tags: filters.value.tags,
+    owner: filters.value.owner
+  }
+});
+
+const paintRequests = useNuxtData<InternalApi['/api/paint-requests']['get']>('paint-requests');
+
 const fetchPaintRequests = async () => {
   loading.value = true;
   error.value = '';
   
   try {
-    const queryParams = new URLSearchParams({
-      page: pagination.value.page.toString(),
-      limit: pagination.value.limit.toString()
+    await useFetch('/api/paint-requests', {
+      method: 'GET',
+      key: 'paint-requests',
+      query: {
+        page: currentPage.value,
+        limit: 20,
+        tags: filters.value.tags,
+        owner: filters.value.owner
+      }
     });
-    
-    if (filters.value.tags) {
-      queryParams.append('tags', filters.value.tags);
-    }
-    
-    if (filters.value.owner) {
-      queryParams.append('owner', filters.value.owner);
-    }
-    
-    const response = await $fetch(`/api/paint-requests?${queryParams}`);
-    
-    if (response.success) {
-      paintRequests.value = response.data as PaintRequest[];
-      pagination.value = response.pagination;
-    }
   } catch (err) {
     console.error('Error fetching paint requests:', err);
     error.value = 'Failed to load paint requests. Please try again.';
@@ -137,8 +130,8 @@ const fetchPaintRequests = async () => {
 };
 
 const changePage = (newPage: number) => {
-  if (newPage >= 1 && newPage <= pagination.value.pages) {
-    pagination.value.page = newPage;
+  if (newPage >= 1 && paintRequests.data.value && newPage <= paintRequests.data.value.pagination.pages) {
+    currentPage.value = newPage;
     fetchPaintRequests();
   }
 };

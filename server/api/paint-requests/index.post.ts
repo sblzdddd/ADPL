@@ -1,21 +1,7 @@
 import { PaintRequest } from '../../models/PaintRequest';
-import { z } from 'zod';
 import { uploadToFreeimage } from '../../utils/image_uploader';
 
-const coordinatesSchema = z.object({
-  TlX: z.number(),
-  TlY: z.number(),
-  Px: z.number(),
-  Py: z.number(),
-});
-
-const createPaintRequestSchema = z.object({
-  coordinates: coordinatesSchema,
-  tags: z.array(z.string().trim()).default([]),
-  image: z.instanceof(File),
-  title: z.string().trim(),
-});
-
+const logger = BakaLogger.child({'service': 'PaintRequestAPI'})
 
 export default defineEventHandler(async (event) => {
   try {
@@ -30,29 +16,15 @@ export default defineEventHandler(async (event) => {
     const formData = await readFormData(event);
     
     // Extract file and form fields
-    const imageFile = formData.get('image') as File | null;
-    const coordinatesData = formData.get('coordinates');
-    const tagsData = formData.get('tags');
-    const title = formData.get('title');
-    let coordinates, tags;
-    
-    try {
-      coordinates = JSON.parse(coordinatesData as string);
-      tags = JSON.parse(tagsData as string);
-    } catch {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid JSON data for coordinates or tags'
-      });
+    const data = {
+      image: formData.get('image') as File | null,
+      coordinates: formData.get('coordinates'),
+      tags: formData.get('tags'),
+      title: formData.get('title'),
     }
     
     // Validate the data using Zod
-    const parsed = createPaintRequestSchema.safeParse({
-      coordinates,
-      tags,
-      image: imageFile,
-      title: title as string,
-    });
+    const parsed = CreatePaintRequestRequest.safeParse(data);
     
     if (!parsed.success) {
       throw createError({
@@ -62,17 +34,16 @@ export default defineEventHandler(async (event) => {
       });
     }
     
-    const { coordinates: validatedCoordinates, tags: validatedTags, image } = parsed.data;
-    const { TlX, TlY, Px, Py } = validatedCoordinates;
+    const { coordinates, tags, image, title } = parsed.data;
 
     // Create the paint request
     const paintRequest = new PaintRequest({
-      coordinates: { TlX, TlY, Px, Py },
-      tags: validatedTags.filter(tag => tag.trim().length > 0),
+      coordinates,
+      tags,
       owner: user._id,
       participants: [],
       comments: [],
-      title: title as string,
+      title,
       image: {
         url: '',
         size: 0,
@@ -101,16 +72,47 @@ export default defineEventHandler(async (event) => {
       message: 'Paint request created successfully'
     };
   } catch (error) {
-    console.error('Error creating paint request:', error);
-    if(error instanceof Error && 'statusCode' in error && 'statusMessage' in error) {
-      throw createError({
-        statusCode: error.statusCode as number,
-        statusMessage: error.statusMessage as string
-      });
+    if (error && typeof error === 'object' && 'statusCode' in error && 'statusMessage' in error) {
+      throw error;
     }
+    logger.error('PaintRequestAPI: Server Error creating paint request', {error})
     throw createError({
       statusCode: 500,
-      statusMessage: 'Internal server error'
-    });
+      statusMessage: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
   }
 });
+
+
+defineRouteMeta({
+  openAPI: {
+    tags: ["Paint Requests"],
+    description: "Create a new paint request",
+    requestBody: {
+      content: {
+        'multipart/form-data': {
+          schema: { $ref: '#/components/schemas/CreatePaintRequestRequest' }
+        }
+      }
+    },
+    responses: {
+      '200': {
+        description: 'Successful response',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/PaintRequestDetailResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
+      },
+      '401': {
+        description: 'Not authenticated',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '500': {
+        description: 'Internal server error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      }
+    }
+  }
+})

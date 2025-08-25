@@ -2,9 +2,11 @@ import { PaintRequest } from '../../../models/PaintRequest';
 import type { PaintRequest as PaintRequestType } from '../../../models/PaintRequest';
 import type { ObjectId } from 'mongoose';
 
+const logger = BakaLogger.child({'service': 'CommentAPI'})
+
 export default defineEventHandler(async (event) => {
   try {
-    const id = getRouterParam(event, 'id');
+    const { id } = await parseRouteParams(event, paintRequestIdParam)
     const paintRequest = await PaintRequest.findById(id)
       .populate('comments.user', 'name email picture')
       .lean();
@@ -91,10 +93,42 @@ export default defineEventHandler(async (event) => {
       data: paintRequest.comments as unknown as typeof PaintRequestType
     };
   } catch (error) {
-    console.error('Error fetching comments:', error);
+    if (error && typeof error === 'object' && 'statusCode' in error && 'statusMessage' in error) {
+      throw error;
+    }
+    logger.error('CommentAPI: Server Error fetching comments', {error})
     throw createError({
       statusCode: 500,
-      statusMessage: 'Internal server error'
-    });
+      statusMessage: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
   }
 });
+
+defineRouteMeta({
+  openAPI: {
+    tags: ["Comments"],
+    description: "Fetch comments for a paint request",
+    parameters: [
+      { in: "path", name: "id", required: true, schema: { type: 'string' } }
+    ],
+    responses: {
+      '200': {
+        description: 'Successful response',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/CommentListResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '500': {
+        description: 'Internal Server Error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      }
+    }
+  }
+})

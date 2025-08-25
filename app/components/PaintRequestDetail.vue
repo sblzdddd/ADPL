@@ -114,9 +114,9 @@
                 class="w-8 h-8 rounded-full"
               >
               <div v-else class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <span class="text-sm text-gray-600">{{ participant.name.charAt(0) }}</span>
+                <span class="text-sm">{{ participant.name.charAt(0) }}</span>
               </div>
-              <span class="text-gray-700">{{ participant.name }}</span>
+              <span class="text-sm">{{ participant.name }}</span>
             </div>
           </div>
           <div v-else class="text-gray-500 text-sm">No participants yet</div>

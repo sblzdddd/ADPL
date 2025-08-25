@@ -1,10 +1,11 @@
 import type { ObjectId } from 'mongodb';
 import { PaintRequest } from '../../../../models/PaintRequest';
 
+const logger = BakaLogger.child({'service': 'CommentAPI'})
+
 export default defineEventHandler(async (event) => {
   try {
-    const id = getRouterParam(event, 'id');
-    const commentId = getRouterParam(event, 'commentId');
+    const { commentId, id } = await parseRouteParams(event, deleteCommentParams)
     
     if (!id) {
       throw createError({
@@ -40,7 +41,7 @@ export default defineEventHandler(async (event) => {
 
     // Find the comment to delete
     const commentIndex = paintRequest.comments.findIndex(
-      comment => comment._id.toString() === commentId
+      comment => comment._id.toString() === commentId.toString()
     );
 
     if (commentIndex === -1) {
@@ -95,16 +96,51 @@ export default defineEventHandler(async (event) => {
       message: 'Comment deleted successfully'
     };
   } catch (error) {
-    console.error('Error deleting comment:', error);
-    if(error instanceof Error && 'statusCode' in error && 'statusMessage' in error) {
-      throw createError({
-        statusCode: error.statusCode as number,
-        statusMessage: error.statusMessage as string
-      });
+    if (error && typeof error === 'object' && 'statusCode' in error && 'statusMessage' in error) {
+      throw error;
     }
+    logger.error('CommentAPI: Server Error deleting comment', {error})
     throw createError({
       statusCode: 500,
-      statusMessage: 'Internal server error'
-    });
+      statusMessage: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
   }
 });
+
+defineRouteMeta({
+  openAPI: {
+    tags: ["Comments"],
+    description: "Delete a comment",
+    parameters: [
+      { in: "path", name: "commentId", required: true, schema: { type: 'string' } },
+      { in: "path", name: "id", required: true, schema: { type: 'string' } }
+    ],
+    responses: {
+      '200': {
+        description: 'Successful response',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/CommentDeleteResponse' } } }
+      },
+      '400': {
+        description: 'Bad Request',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/validationErrorSchema' } } }
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '403': {
+        description: 'Forbidden (Unprivileged deletion)',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '404': {
+        description: 'Comment Not Found',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      },
+      '500': {
+        description: 'Internal Server Error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/generalErrorSchema' } } }
+      }
+    }
+  }
+})

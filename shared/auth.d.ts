@@ -13,10 +13,6 @@ declare module '#auth-utils' {
     user: User
     loggedInAt: Date
   }
-
-  interface SecureSessionData {
-    // Add any secure data that should only be accessible on the server
-  }
 }
 
 export {}

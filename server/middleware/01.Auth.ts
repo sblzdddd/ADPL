@@ -35,8 +35,6 @@ export default defineEventHandler(async (event) => {
 
     // Verify the session against the database, based on the type of auth
     let userAuth: IUser | null = null
-    console.log('session', session.user.email)
-    console.log('session', session.user.id)
     
     userAuth = await User.findOne({email: session.user.email, _id: ObjectId.createFromHexString(session.user.id)})
 

@@ -7,31 +7,28 @@
         <div class="flex items-center gap-2 mb-1">
           <span class="font-medium">{{ comment.user?.name }}</span>
           <span class="text-xs text-muted-foreground">{{ formatDate(comment.createdAt) }}</span>
-          <!-- Delete button for comment owner -->
-          <AuthState v-slot="{ loggedIn, user }">
-            <Button
-              v-if="loggedIn && user && canDeleteComment(user)"
-              variant="ghost"
-              size="sm"
-              class="h-6 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-              @click="deleteComment"
-            >
-              <Icon name="mdi:delete" size="16" />
-            </Button>
-          </AuthState>
         </div>
         <p class="text-muted-foreground">{{ comment.content }}</p>
         
         <!-- Reply button -->
-        <div class="mt-2">
-          <a
-            v-if="!showReplyForm"
-            class="text-sm text-blue-500 hover:underline cursor-pointer"
-            @click.prevent="showReplyForm = true"
-          >
-            Reply
-          </a>
-        </div>
+        <AuthState v-slot="{ loggedIn, user }">
+          <div v-if="loggedIn && user" class="mt-2 flex gap-4">
+            <a
+              v-if="!showReplyForm"
+              class="text-sm text-blue-500 hover:underline cursor-pointer"
+              @click.prevent="showReplyForm = true"
+            >
+              Reply
+            </a>
+            <a
+              v-if="canDeleteComment(user)"
+              class="text-sm text-red-500 hover:underline cursor-pointer"
+              @click.prevent="deleteComment"
+            >
+              Delete
+            </a>
+          </div>
+        </AuthState>
       </div>
     </div>
 
@@ -77,30 +74,28 @@
             <div class="flex items-center gap-2 mb-1">
               <span class="font-medium text-sm">{{ reply.user?.name }}</span>
               <span class="text-xs text-muted-foreground">{{ formatDate(reply.createdAt) }}</span>
-              <!-- Delete button for reply owner -->
-               <AuthState v-slot="{ loggedIn, user }">
-                <Button
-                  v-if="loggedIn && user && canDeleteReply(reply, user)"
-                  variant="ghost"
-                  size="icon"
-                  @click.prevent="deleteReply(reply._id!)"
-                >
-                  <Icon name="mdi:delete" size="14" />
-                </Button>
-               </AuthState>
             </div>
             <p class="text-sm text-muted-foreground">Reply to <span class="font-medium">{{ comment.replies.find(c => c._id === reply.parentComment)?.user?.name || comment.user?.name }}</span>: {{ reply.content }}</p>
             
             <!-- Reply to reply button -->
-            <div class="mt-2">
-              <a
-                v-if="reply._id && !replyFormStates[reply._id]?.show"
-                class="text-xs text-blue-500 hover:underline cursor-pointer"
-                @click.prevent="showReplyToReplyForm(reply)"
-              >
-                Reply
-              </a>
-            </div>
+            <AuthState v-slot="{ loggedIn, user }">
+              <div v-if="loggedIn && user" class="mt-2 flex gap-4">
+                <a
+                  v-if="reply._id && !replyFormStates[reply._id]?.show"
+                  class="text-xs text-blue-500 hover:underline cursor-pointer"
+                  @click.prevent="showReplyToReplyForm(reply)"
+                >
+                  Reply
+                </a>
+                <a
+                  v-if="canDeleteReply(reply, user)"
+                  class="text-xs text-red-500 hover:underline cursor-pointer"
+                  @click.prevent="deleteReply(reply._id!)"
+                >
+                  Delete
+                </a>
+              </div>
+            </AuthState>
           </div>
         </div>
         

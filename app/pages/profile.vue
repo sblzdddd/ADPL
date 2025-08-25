@@ -26,12 +26,17 @@
           </div>
           
           <div class="p-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Account Information</h3>
+            <h3 class="text-lg font-semibold mb-2">Account Information</h3>
             <div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <p><strong>User ID:</strong> {{ user?.id }}</p>
               <p><strong>Member since:</strong> {{ formatDate(user?.createdAt) }}</p>
               <p><strong>Logged in at:</strong> {{ formatDate(session?.loggedInAt) }}</p>
             </div>
+          </div>
+
+          <div class="p-4">
+            <h3 class="text-lg font-semibold mb-2">Request Posts</h3>
+            
           </div>
           
           <div class="flex justify-start space-x-4 pt-4">
