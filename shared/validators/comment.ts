@@ -53,7 +53,7 @@ export const CommentPostRequest = z.object({
     description: 'Comment content',
     example: 'This is a comment',
   }),
-  parentComment: objectIdSchemaCoerced('Parent comment ID').meta({
+  parentComment: objectIdSchemaCoerced('Parent comment ID').optional().meta({
     description: 'The ID of the parent comment',
     example: '6863722013b04be86cb7a555',
   }),

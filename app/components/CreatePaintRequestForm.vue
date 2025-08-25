@@ -1,155 +1,164 @@
 <template>
   <div class="max-w-2xl mx-auto p-6 bg-background rounded-lg shadow-md">
-    <form class="space-y-6" @submit.prevent="handleSubmit">
-      
-      <div>
-        <label class="block text-sm font-medium mb-2">Title</label>
-        <div class="space-y-2">
-          <Input
-            v-model="form.title"
-            required
-            type="text"
-            placeholder="Add a title"
-          />
-        </div>
+    <AuthState v-slot="{ loggedIn }">
+      <div v-if="!loggedIn" class="text-center py-8">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Authentication Required</h1>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">Please log in to create paint requests.</p>
+        <Button size="lg" @click="openInPopup('/auth/google')">
+          <Icon name="lucide:log-in" size="20" class="mr-2" />
+          Login with Google
+        </Button>
       </div>
-      <!-- Image Upload -->
-      <div>
-        <label class="block text-sm font-medium mb-3">
-          Image (PNG, max 2MB)
-        </label>
-        <div 
-          class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
-          :class="{ 'border-blue-400 bg-blue-50': isDragOver }"
-          @dragover.prevent="handleDragOver"
-          @dragleave.prevent="handleDragLeave"
-          @drop.prevent="handleDrop"
-        >
-          <input
-            ref="fileInput"
-            type="file"
-            accept="image/png"
-            class="hidden"
-            @change="handleFileChange"
-          >
-          <div v-if="!selectedFile" class="cursor-pointer" @click="fileInput?.click()">
-            <Icon name="lucide:camera" size="48" class="mx-auto mb-2 text-gray-500" />
-            <p class="text-sm text-gray-500">Click to upload or drag and drop</p>
-          </div>
-          <div v-else class="space-y-2">
-            <img :src="previewUrl" alt="Preview" class="mx-auto h-32 w-auto rounded" >
-            <p class="text-sm">{{ selectedFile.name }}</p>
-            <Button
-              variant="ghost"
-              class="!text-red-600"
-              @click="removeFile"
-            >
-              Remove
-            </Button>
-          </div>
-        </div>
-        <p v-if="fileError" class="mt-1 text-sm text-red-600">{{ fileError }}</p>
-      </div>
-
-      <!-- Coordinates -->
-      <div>
-        <label class="block text-sm font-medium mb-2">Coordinates</label>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs mb-1">TlX</label>
+      <form v-else class="space-y-6" @submit.prevent="handleSubmit">
+        <div>
+          <label class="block text-sm font-medium mb-2">Title</label>
+          <div class="space-y-2">
             <Input
-              v-model.number="form.coordinates.TlX"
-              type="number"
-              step="any"
+              v-model="form.title"
               required
-            />
-          </div>
-          <div>
-            <label class="block text-xs mb-1">TlY</label>
-            <Input
-              v-model.number="form.coordinates.TlY"
-              type="number"
-              step="any"
-              required
-            />
-          </div>
-          <div>
-            <label class="block text-xs mb-1">Px</label>
-            <Input
-              v-model.number="form.coordinates.Px"
-              type="number"
-              step="any"
-              required
-            />
-          </div>
-          <div>
-            <label class="block text-xs mb-1">Py</label>
-            <Input
-              v-model.number="form.coordinates.Py"
-              type="number"
-              step="any"
-              required
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Tags -->
-      <div>
-        <label class="block text-sm font-medium mb-2">Tags</label>
-        <div class="space-y-2">
-          <div class="flex gap-2">
-            <Input
-              v-model="newTag"
               type="text"
-              placeholder="Add a tag"
-              @keyup.enter="addTag"
+              placeholder="Add a title"
             />
-            <Button
-              variant="default"
-              @click.prevent="addTag"
-            >
-              Add
-            </Button>
           </div>
-          <div class="flex flex-wrap gap-2">
-            <span
-              v-for="tag in form.tags"
-              :key="tag"
-              class="px-3 py-1 bg-blue-800/20 text-blue-400 rounded-full text-sm flex items-center gap-1"
+        </div>
+        <!-- Image Upload -->
+        <div>
+          <label class="block text-sm font-medium mb-3">
+            Image (PNG, max 2MB)
+          </label>
+          <div 
+            class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
+            :class="{ 'border-blue-400 bg-blue-50': isDragOver }"
+            @dragover.prevent="handleDragOver"
+            @dragleave.prevent="handleDragLeave"
+            @drop.prevent="handleDrop"
+          >
+            <input
+              ref="fileInput"
+              type="file"
+              accept="image/png"
+              class="hidden"
+              @change="handleFileChange"
             >
-              {{ tag }}
+            <div v-if="!selectedFile" class="cursor-pointer" @click="fileInput?.click()">
+              <Icon name="lucide:camera" size="48" class="mx-auto mb-2 text-gray-500" />
+              <p class="text-sm text-gray-500">Click to upload or drag and drop</p>
+            </div>
+            <div v-else class="space-y-2">
+              <img :src="previewUrl" alt="Preview" class="mx-auto h-32 w-auto rounded" >
+              <p class="text-sm">{{ selectedFile.name }}</p>
               <Button
                 variant="ghost"
-                size="icon"
-                class="!text-blue-600 w-6 h-6"
-                @click="removeTag(tag)"
+                class="!text-red-600"
+                @click="removeFile"
               >
-                <Icon name="mdi:close" size="16" />
+                Remove
               </Button>
-            </span>
+            </div>
+          </div>
+          <p v-if="fileError" class="mt-1 text-sm text-red-600">{{ fileError }}</p>
+        </div>
+
+        <!-- Coordinates -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Coordinates</label>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs mb-1">TlX</label>
+              <Input
+                v-model.number="form.coordinates.TlX"
+                type="number"
+                step="any"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-xs mb-1">TlY</label>
+              <Input
+                v-model.number="form.coordinates.TlY"
+                type="number"
+                step="any"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-xs mb-1">Px</label>
+              <Input
+                v-model.number="form.coordinates.Px"
+                type="number"
+                step="any"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-xs mb-1">Py</label>
+              <Input
+                v-model.number="form.coordinates.Py"
+                type="number"
+                step="any"
+                required
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Submit Button -->
-      <div class="flex gap-4">
-        <Button
-          type="submit"
-          :disabled="isSubmitting"
-          class="flex-1"
-        >
-          <span v-if="isSubmitting">Creating...</span>
-          <span v-else>Create Paint Request</span>
-        </Button>
-        <Button
-          variant="outline"
-          @click="$emit('cancel')"
-        >
-          Cancel
-        </Button>
-      </div>
-    </form>
+        <!-- Tags -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Tags</label>
+          <div class="space-y-2">
+            <div class="flex gap-2">
+              <Input
+                v-model="newTag"
+                type="text"
+                placeholder="Add a tag"
+                @keyup.enter="addTag"
+              />
+              <Button
+                variant="default"
+                @click.prevent="addTag"
+              >
+                Add
+              </Button>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span
+                v-for="tag in form.tags"
+                :key="tag"
+                class="px-3 py-1 bg-blue-800/20 text-blue-400 rounded-full text-sm flex items-center gap-1"
+              >
+                {{ tag }}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="!text-blue-600 w-6 h-6"
+                  @click="removeTag(tag)"
+                >
+                  <Icon name="mdi:close" size="16" />
+                </Button>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex gap-4">
+          <Button
+            type="submit"
+            :disabled="isSubmitting"
+            class="flex-1"
+          >
+            <span v-if="isSubmitting">Creating...</span>
+            <span v-else>Create Paint Request</span>
+          </Button>
+          <Button
+            variant="outline"
+            @click="$emit('cancel')"
+          >
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </AuthState>
   </div>
 </template>
 
@@ -157,6 +166,8 @@
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import type { PaintRequest } from '../../shared/types/paint_request';
+
+const { openInPopup } = useUserSession();
 
 interface FormData {
   title: string;

@@ -20,6 +20,14 @@
             </Button>
           </div>
         </form>
+        <div v-else class="text-center py-8">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Authentication Required</h1>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">Please log in to comment.</p>
+          <Button size="lg" @click="openInPopup('/auth/google')">
+            <Icon name="lucide:log-in" size="20" class="mr-2" />
+            Login with Google
+          </Button>
+        </div>
       </AuthState>
     </div>
 
@@ -45,6 +53,8 @@
 
 <script setup lang="ts">
 import { Button } from '~/components/ui/button';
+
+const { openInPopup } = useUserSession();
 
 // Component name for linting
 defineOptions({

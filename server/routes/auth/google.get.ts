@@ -17,7 +17,7 @@ export default defineOAuthGoogleEventHandler({
       let pictureUrl: string | undefined;
       
       // If user has a picture, download and upload it to FreeImage.host
-      if (user.picture) {
+      if (user.picture && !dbUser) {
         try {
           console.log('Downloading user profile picture from Google...');
           
