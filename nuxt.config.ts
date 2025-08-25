@@ -102,6 +102,7 @@ export default defineNuxtConfig({
     session: {
       maxAge: 60 * 60 * 24 * 7, // 1 week
       password: process.env.NUXT_SESSION_PASSWORD || '',
+      name: 'naidesu',
     },
     freeimage: {
       apiKey: process.env.FREEIMAGE_API_KEY || '',
