@@ -86,3 +86,10 @@ export default defineOAuthGoogleEventHandler({
     return sendRedirect(event, '/?error=auth_failed');
   },
 });
+
+defineRouteMeta({
+  openAPI: {
+    tags: ["Auth"],
+    description: "Google OAuth Login / Callback",
+  },
+});

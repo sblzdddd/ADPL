@@ -34,6 +34,7 @@ async function getAllValidatorSchemas(): Promise<{
       () => import("../../../shared/validators/common"),
       () => import("../../../shared/validators/paint_requests"),
       () => import("../../../shared/validators/comment"),
+      () => import("../../../shared/validators/user"),
     ];
 
     // Import each validator file and extract Zod schemas
