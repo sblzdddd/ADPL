@@ -3,12 +3,12 @@
     <div class="p-6">
       <div v-if="loading" class="text-center py-8">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"/>
-        <p class="mt-2 text-gray-600">Loading profile...</p>
+        <p class="mt-2">Loading profile...</p>
       </div>
       
       <div v-else-if="error" class="text-center py-8">
         <Icon name="mdi:alert-circle" size="48" class="mx-auto mb-2 text-destructive" />
-        <p class="text-gray-600">{{ error }}</p>
+        <p class="mb-2">{{ error }}</p>
         <Button @click="fetchUserProfile">
           Try Again
         </Button>

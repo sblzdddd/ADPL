@@ -2,6 +2,16 @@ import { ObjectId } from 'mongodb'
 const logger = BakaLogger.child({service: 'AuthMiddleware'})
 
 export default defineEventHandler(async (event) => {
+  
+  const headers = {
+    'Access-Control-Allow-Origin': 'https://wplace.live',
+    'crossOriginResourcePolicy': 'cross-origin',
+    'crossOriginOpenerPolicy': 'same-origin-allow-popups',
+    'crossOriginEmbedderPolicy': 'unsafe-none',
+    'contentSecurityPolicy': "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+    'X-XSS-Protection': 1
+  }
+  setHeaders(event, headers)
   // Get the request URL
   const url = getRequestURL(event)
   
