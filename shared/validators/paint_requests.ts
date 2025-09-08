@@ -4,10 +4,6 @@ import { UserSchema } from "./user";
 
 export const CreatePaintRequestRequest = z.object({
   coordinates: coordinatesSchema,
-  tags: z.array(z.string().min(1).max(100).trim()).default([]).meta({
-    description: 'Tags for the paint request',
-    example: ['tag1', 'tag2'],
-  }),
   image: imageFileSchema('Template Image').meta({
     description: 'Blue Marble Template Image for the paint request',
     example: '[no example]',
@@ -32,7 +28,6 @@ export const PaintRequestDetailResponse = z.object({
   data: z.object({
     _id: z.string(),
     title: z.string(),
-    tags: z.array(z.string()),
     coordinates: coordinatesSchema,
     owner: UserSchema,
     image: ImageTemplateSchema,
@@ -65,10 +60,6 @@ export const UpdatePaintRequestRequest = z.object({
     description: 'Coordinates for the paint request',
     example: { TlX: 0, TlY: 0, Px: 100, Py: 100 },
   }),
-  tags: z.array(z.string().min(1).max(100).trim()).optional().meta({
-    description: 'Tags for the paint request',
-    example: ['tag1', 'tag2'],
-  }),
   image: imageFileSchema('Template Image').optional().meta({
     description: 'Blue Marble Template Image for the paint request',
     example: '[no example]',
@@ -96,10 +87,6 @@ export const UpdatePaintRequestResponse = z.object({
     title: z.string().meta({
       description: 'Updated title',
       example: 'Updated paint request title',
-    }),
-    tags: z.array(z.string()).meta({
-      description: 'Updated tags',
-      example: ['tag1', 'tag2'],
     }),
     coordinates: coordinatesSchema.meta({
       description: 'Updated coordinates',

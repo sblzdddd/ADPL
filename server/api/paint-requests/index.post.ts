@@ -19,7 +19,6 @@ export default defineEventHandler(async (event) => {
     const data = {
       image: formData.get('image') as File | null,
       coordinates: JSON.parse(formData.get('coordinates') as string),
-      tags: JSON.parse(formData.get('tags') as string),
       title: formData.get('title') as string,
     }
     
@@ -34,12 +33,11 @@ export default defineEventHandler(async (event) => {
       });
     }
     
-    const { coordinates, tags, image, title } = parsed.data;
+    const { coordinates, image, title } = parsed.data;
 
     // Create the paint request
     const paintRequest = new PaintRequest({
       coordinates,
-      tags,
       owner: user._id,
       participants: [],
       comments: [],

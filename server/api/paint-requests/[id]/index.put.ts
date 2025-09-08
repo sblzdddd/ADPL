@@ -49,7 +49,6 @@ export default defineEventHandler(async (event) => {
 
     // Extract all form fields at once
     const coordinates = formData.get('coordinates');
-    const tags = formData.get('tags');
     const title = formData.get('title');
     const image = formData.get('image') as File | null;
 
@@ -62,18 +61,6 @@ export default defineEventHandler(async (event) => {
           statusCode: 400,
           statusMessage: 'Bad Request',
           message: 'Invalid coordinates format: ' + error
-        });
-      }
-    }
-
-    if (tags) {
-      try {
-        updateData.tags = JSON.parse(tags.toString());
-      } catch (error) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: 'Bad Request',
-          message: 'Invalid tags format: ' + error
         });
       }
     }
@@ -98,7 +85,6 @@ export default defineEventHandler(async (event) => {
     // Validate all fields at once using a single validation schema
     const updateValidationSchema = z.object({
       coordinates: coordinates ? coordinatesSchema : z.undefined(),
-      tags: tags ? z.array(z.string().min(1).max(100).trim()) : z.undefined(),
       title: title ? z.string().min(1).max(100).trim() : z.undefined(),
     }).partial();
 
@@ -157,7 +143,6 @@ export default defineEventHandler(async (event) => {
     const responseData = {
       _id: updatedPaintRequest._id.toString(),
       title: updatedPaintRequest.title,
-      tags: updatedPaintRequest.tags,
       coordinates: updatedPaintRequest.coordinates,
       owner: updatedPaintRequest.owner,
       image: updatedPaintRequest.image,

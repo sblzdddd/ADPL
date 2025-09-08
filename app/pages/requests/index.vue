@@ -92,7 +92,6 @@ useHead({
 const loading = ref(false);
 const error = ref('');
 const filters = ref({
-  tags: '',
   owner: ''
 });
 
@@ -109,7 +108,6 @@ await useFetch('/api/paint-requests', {
   query: {
     page: currentPage.value,
     limit: 20,
-    tags: filters.value.tags,
     owner: filters.value.owner
   },
   lazy: true
@@ -128,7 +126,6 @@ const fetchPaintRequests = async () => {
       query: {
         page: currentPage.value,
         limit: 20,
-        tags: filters.value.tags,
         owner: filters.value.owner
       }
     });

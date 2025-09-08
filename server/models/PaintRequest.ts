@@ -26,7 +26,6 @@ export interface IPaintRequest extends Document {
     Px: number;
     Py: number;
   };
-  tags: string[];
   title: string;
   owner: mongoose.Types.ObjectId;
   participants: mongoose.Types.ObjectId[];
@@ -123,10 +122,6 @@ const PaintRequestSchema = new Schema<IPaintRequest>({
     required: true,
     trim: true,
   },
-  tags: [{
-    type: String,
-    trim: true,
-  }],
   owner: {
     type: Schema.Types.ObjectId,
     ref: 'User',
@@ -143,7 +138,6 @@ const PaintRequestSchema = new Schema<IPaintRequest>({
 
 // Index for better query performance
 PaintRequestSchema.index({ owner: 1, createdAt: -1 });
-PaintRequestSchema.index({ tags: 1 });
 PaintRequestSchema.index({ createdAt: -1 });
 
 export const PaintRequest = mongoose.model<IPaintRequest>('PaintRequest', PaintRequestSchema);

@@ -14,7 +14,7 @@
         <div class="pl-2 w-full flex flex-col items-center">
           <h1 class="text-3xl font-bold mb-3">Create New Paint Request</h1>
           <p class="text-gray-500">Fill out the form below to create a new paint request.</p>
-          <p class="text-gray-500">Make sure to provide accurate coordinates and relevant tags.</p>
+          <p class="text-gray-500">Make sure to provide accurate coordinates.</p>
         </div>
       </div>
 
@@ -52,7 +52,7 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: 'Create a new paint request with coordinates, tags, and image upload'
+      content: 'Create a new paint request with coordinates, and image upload'
     }
   ]
 });

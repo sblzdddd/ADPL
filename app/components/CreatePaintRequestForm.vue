@@ -102,44 +102,6 @@
           </div>
         </div>
 
-        <!-- Tags -->
-        <div>
-          <label class="block text-sm font-medium mb-2">Tags</label>
-          <div class="space-y-2">
-            <div class="flex gap-2">
-              <Input
-                v-model="newTag"
-                type="text"
-                placeholder="Add a tag"
-                @keyup.enter="addTag"
-              />
-              <Button
-                variant="default"
-                @click.prevent="addTag"
-              >
-                Add
-              </Button>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <span
-                v-for="tag in form.tags"
-                :key="tag"
-                class="px-3 py-1 bg-blue-800/20 text-blue-400 rounded-full text-sm flex items-center gap-1"
-              >
-                {{ tag }}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="!text-blue-600 w-6 h-6"
-                  @click="removeTag(tag)"
-                >
-                  <Icon name="mdi:close" size="16" />
-                </Button>
-              </span>
-            </div>
-          </div>
-        </div>
-
         <!-- Submit Button -->
         <div class="flex gap-4">
           <Button
@@ -172,7 +134,6 @@ const { openInPopup } = useUserSession();
 interface FormData {
   title: string;
   coordinates: Coordinates;
-  tags: string[];
 }
 
 const emit = defineEmits<{
@@ -185,7 +146,6 @@ const selectedFile = ref<File | null>(null);
 const previewUrl = ref<string>('');
 const fileError = ref<string>('');
 const isSubmitting = ref(false);
-const newTag = ref('');
 const isDragOver = ref(false);
 
 const form = ref<FormData>({
@@ -196,7 +156,6 @@ const form = ref<FormData>({
     Px: 0,
     Py: 0
   },
-  tags: []
 });
 
 const handleFileChange = (event: Event) => {
@@ -233,21 +192,6 @@ const removeFile = () => {
   previewUrl.value = '';
   if (fileInput.value) {
     fileInput.value.value = '';
-  }
-};
-
-const addTag = () => {
-  const tag = newTag.value.trim();
-  if (tag && !form.value.tags.includes(tag)) {
-    form.value.tags.push(tag);
-    newTag.value = '';
-  }
-};
-
-const removeTag = (tag: string) => {
-  const index = form.value.tags.indexOf(tag);
-  if (index > -1) {
-    form.value.tags.splice(index, 1);
   }
 };
 
@@ -298,7 +242,6 @@ const handleSubmit = async () => {
     const formData = new FormData();
     formData.append('image', selectedFile.value);
     formData.append('coordinates', JSON.stringify(form.value.coordinates));
-    formData.append('tags', JSON.stringify(form.value.tags));
     formData.append('title', form.value.title);
 
     // Single API call to create paint request with image
@@ -313,7 +256,6 @@ const handleSubmit = async () => {
       // Reset form
       form.value = {
         coordinates: { TlX: 0, TlY: 0, Px: 0, Py: 0 },
-        tags: [],
         title: ''
       };
       removeFile();

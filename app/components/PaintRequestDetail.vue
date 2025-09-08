@@ -160,46 +160,6 @@
           </div>
         </div>
 
-        <!-- Tags -->
-        <div class="info-card">
-          <h3 class="text-lg font-semibold mb-3">Tags</h3>
-          <div v-if="!isEditing" class="flex flex-wrap gap-2">
-            <span
-              v-for="tag in request.tags"
-              :key="tag"
-              class="px-3 py-1 bg-blue-600/10 text-blue-400 rounded-full text-sm"
-            >
-              {{ tag }}
-            </span>
-          </div>
-          <div v-else class="space-y-2">
-            <div class="flex flex-wrap gap-2">
-              <span
-                v-for="(tag, index) in editData.tags"
-                :key="index"
-                class="px-3 py-1 bg-blue-600/10 text-blue-400 rounded-full text-sm flex items-center gap-1"
-              >
-                {{ tag }}
-                <button
-                  class="text-blue-600 hover:text-blue-800"
-                  @click="removeTag(index)"
-                >
-                  <Icon name="mdi:close" size="14" />
-                </button>
-              </span>
-            </div>
-            <div class="flex gap-2">
-              <Input
-                v-model="newTag"
-                placeholder="Add new tag"
-                class="flex-1"
-                @keyup.enter="addTag"
-              />
-              <Button variant="outline" size="sm" @click="addTag">Add</Button>
-            </div>
-          </div>
-        </div>
-
       </div>
 
       <!-- Right Column - Owner Info & Actions -->
@@ -303,7 +263,6 @@ const joining = ref(false);
 const imageError = ref(false);
 const isEditing = ref(false);
 const saving = ref(false);
-const newTag = ref('');
 const imageInput = ref<HTMLInputElement>();
 const selectedImageFile = ref<File | null>(null);
 
@@ -316,7 +275,6 @@ const editData = ref({
     Px: 0,
     Py: 0
   },
-  tags: [] as string[]
 });
 
 const isOwner = (user: AuthUser) => {
@@ -342,28 +300,15 @@ const startEdit = () => {
   editData.value = {
     title: request.value.title,
     coordinates: { ...request.value.coordinates },
-    tags: [...request.value.tags]
   };
   isEditing.value = true;
 };
 
 const cancelEdit = () => {
   isEditing.value = false;
-  newTag.value = '';
   selectedImageFile.value = null;
   // Reset image to original state
   imageError.value = false;
-};
-
-const addTag = () => {
-  if (newTag.value.trim() && !editData.value.tags.includes(newTag.value.trim())) {
-    editData.value.tags.push(newTag.value.trim());
-    newTag.value = '';
-  }
-};
-
-const removeTag = (index: number) => {
-  editData.value.tags.splice(index, 1);
 };
 
 const handleImageChange = (event: Event) => {
@@ -406,7 +351,6 @@ const saveChanges = async () => {
     // Add all the edit data to form data
     formData.append('title', editData.value.title);
     formData.append('coordinates', JSON.stringify(editData.value.coordinates));
-    formData.append('tags', JSON.stringify(editData.value.tags));
     
     // Add image file if a new one was selected
     if (selectedImageFile.value) {
@@ -422,7 +366,6 @@ const saveChanges = async () => {
       // Update the local request data
       Object.assign(request.value, response.data);
       isEditing.value = false;
-      newTag.value = '';
       selectedImageFile.value = null;
       
       // Show success message

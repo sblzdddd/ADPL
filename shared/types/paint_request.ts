@@ -13,7 +13,6 @@ export interface PaintRequest {
     originalFilename?: string;
   };
   coordinates: Coordinates;
-  tags: string[];
   title: string;
   owner: User;
   participants: User[];

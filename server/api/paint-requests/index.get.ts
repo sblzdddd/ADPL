@@ -8,14 +8,9 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const page = parseInt(query.page as string) || 1;
     const limit = parseInt(query.limit as string) || 10;
-    const tags = query.tags ? (query.tags as string).split(',') : [];
     const owner = query.owner as string;
 
     const filter: FilterQuery<IPaintRequest> = {};
-    
-    if (tags.length > 0) {
-      filter.tags = { $in: tags };
-    }
     
     if (owner) {
       filter.owner = owner;
@@ -70,7 +65,6 @@ defineRouteMeta({
     parameters: [
       { in: "query", name: "page", required: false, schema: { type: 'number', default: 1 } },
       { in: "query", name: "limit", required: false, schema: { type: 'number', default: 20 } },
-      { in: "query", name: "tags", required: false, schema: { type: 'string', default: '' } },
       { in: "query", name: "owner", required: false, schema: { type: 'string', default: '' } }
     ],
     responses: {

@@ -48,23 +48,10 @@
               <span class="text-sm text-muted-foreground">{{ request.owner?.name }}</span>
             </div>
             
-            <div v-if="request.participants?.length > 0" class="text-xs text-gray-500">
+            <div class="text-xs text-gray-500">
               {{ request.participants.length }} participant(s)
             </div>
           </NuxtLink>
-        </div>
-
-        <!-- Tags -->
-        <div class="mb-3">
-          <div class="flex flex-wrap gap-1">
-            <span 
-              v-for="tag in request.tags" 
-              :key="tag"
-              class="px-2 py-1 bg-blue-800/20 text-blue-400 text-xs rounded-full"
-            >
-              {{ tag }}
-            </span>
-          </div>
         </div>
 
         <!-- Comments count -->
