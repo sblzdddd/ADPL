@@ -172,16 +172,15 @@
               v-if="request.owner?.picture"
               :src="request.owner.picture"
               :alt="request.owner.name"
-              class="w-12 h-12 rounded-full"
+              class="w-8 h-8 rounded-full"
             >
-            <div v-else class="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+            <div v-else class="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
               <span class="text-lg">{{ request.owner?.name?.charAt(0) }}</span>
             </div>
             <div>
               <NuxtLink :to="`/user/${request.owner?._id}`">
                 <div class="font-medium">{{ request.owner?.name }}</div>
               </NuxtLink>
-              <div class="text-sm">{{ request.owner?.email }}</div>
             </div>
           </div>
         </div>

@@ -20,15 +20,14 @@
             v-if="profileUser.picture" 
             :src="profileUser.picture" 
             :alt="profileUser.name"
-            class="h-14 w-14 rounded-full border-2 border-blue-100 dark:border-blue-900"
+            class="h-10 w-10 rounded-full border-2 border-blue-100 dark:border-blue-900"
           >
           <div class="flex-1">
             <h1 class="text-xl font-bold text-gray-900 dark:text-white">{{ profileUser.name }}</h1>
-            <p class="text-lg text-gray-600 dark:text-gray-400">{{ profileUser.email }}</p>
           </div>
         </div>
         
-        <div class="p-4">
+        <div class="p-0">
           <h3 class="text-lg font-semibold mb-2">Account Information</h3>
           <div class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
             <p><strong>User ID:</strong> {{ profileUser._id }}</p>
@@ -37,7 +36,7 @@
           </div>
         </div>
 
-        <div class="p-4">
+        <div class="p-0">
           <h3 class="text-lg font-semibold mb-2">Request Posts</h3>
           
           <!-- Loading State for Paint Requests -->
